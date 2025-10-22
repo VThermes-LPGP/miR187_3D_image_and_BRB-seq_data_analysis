@@ -1,4 +1,4 @@
-# Unveiling the role of mir-187 in adult ovarian follicle growth and female fecundity in medaka (Oryzias latipes)
+# miR-187-medaka-fertility
 This repository contains all code used in our study on the role of miR-187 in adult ovarian follicle growth and female fertility in *Oryzias latipes* (medaka). It includes 3D imaging analysis and BRB-seq transcriptomic analysis comparing young adult (90 dph) miR-187⁻/⁻ mutants to WT.
 
 ---
@@ -48,8 +48,10 @@ renv::restore()           # installs all the package versions recorded in renv.l
 ## How to reproduce
 
 1-Clone the repository :
+```bash
 git clone https://github.com/<your-username>/miR187-medaka-fertility.git
 cd miR187-medaka-fertility
+```
 
 2-Download datasets
 See data/README.md for dataset links and accession numbers.
