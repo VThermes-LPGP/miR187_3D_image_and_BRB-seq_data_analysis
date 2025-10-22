@@ -33,3 +33,34 @@ Create and activate the conda environment:
 ```bash
 conda env create -f environment.yml
 conda activate mir187-imaging
+
+### R (for BRB-seq analysis)
+Use renv to restore the exact R environment used in this project.
+renv ensures that everyone reproduces the same results by installing the same versions of the R packages.
+
+Run the following commands in R:
+install.packages("renv")  # installs renv if not already available
+renv::restore()           # installs all the package versions recorded in renv.lock
+
+## How to reproduce
+
+1-Clone the repository :
+git clone https://github.com/<your-username>/miR187-medaka-fertility.git
+cd miR187-medaka-fertility
+
+2-Download datasets
+See data/README.md for dataset links and accession numbers.
+
+3-Run the analyses
+Imaging: run the Python scripts in scripts/python/
+Transcriptomics: open and run the R Markdown notebook notebooks/BRBseq_analysis.Rmd
+
+## If you use this code, please cite:
+
+Unveiling the role of mir-187 in adult ovarian follicle growth and female fecundity in medaka (Oryzias latipes).
+Marlène Davilma, Stéphanie Gay, Sully Heng, Fabrice Mahé, Manon Thomas, Laurence Dubreil, Jérôme Montfort, Aurélien Brionne, Julien Bobe, Violette Thermes (2026). 
+Version 1.0, Zenodo. DOI: 10.5281/zenodo.xxxxxx
+
+## License
+
+This repository is distributed under the MIT License.
