@@ -1,6 +1,13 @@
 # miR-187-medaka-fertility
 This repository contains all code used in our study on the role of miR-187 in adult ovarian follicle growth and female fertility in *Oryzias latipes* (medaka). It includes 3D imaging analysis and BRB-seq transcriptomic analysis comparing young adult (90 dph) miR-187⁻/⁻ mutants to WT.
 
+**3D imaging analysis:**
+
+**BRB-seq transcriptomic analysis:**
+Transcriptome alignment and quantification was carried out using Alevin fry @pmid37034702 through is simpleaf wrapper @pmid37034702.
+Genome alignment and quantification on exons was carried out using  STARsolo @starsolo. 
+These steps have been gathered in the form of a [Nextflow rnaseq pipeline](https://forgemia.inra.fr/lpgp/rnaseq).
+
 ---
 
 ## Repository structure
