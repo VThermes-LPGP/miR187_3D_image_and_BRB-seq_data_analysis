@@ -33,14 +33,17 @@ Create and activate the conda environment:
 ```bash
 conda env create -f environment.yml
 conda activate mir187-imaging
+```
 
 ### R (for BRB-seq analysis)
 Use renv to restore the exact R environment used in this project.
 renv ensures that everyone reproduces the same results by installing the same versions of the R packages.
 
 Run the following commands in R:
+```r
 install.packages("renv")  # installs renv if not already available
 renv::restore()           # installs all the package versions recorded in renv.lock
+```
 
 ## How to reproduce
 
