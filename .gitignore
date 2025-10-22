@@ -205,3 +205,44 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# --- R / RStudio ---
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# --- renv (environnement R reproductible) ---
+renv/library/
+renv/staging/
+.renv/
+renv.lock.backup*
+
+# --- Fichiers d'environnement / secrets ---
+.env
+.env.*
+
+# --- Données volumineuses & résultats générés (ne pas versionner) ---
+data/raw/
+data/processed/
+results/
+
+# Formats imagerie fréquents
+*.tif
+*.tiff
+*.nd2
+*.czi
+*.h5
+*.hdf5
+
+# Archives / gros fichiers
+*.zip
+*.tar
+*.tar.gz
+*.gz
+*.bz2
+*.7z
+
+# --- OS divers ---
+.DS_Store
+Thumbs.db
