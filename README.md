@@ -33,6 +33,37 @@ This repository contains all code used in our study on the role of miR-187 in ad
   - `.gitignore` — ignores temporary files & large data
   - `README.md` — you are here
 
+```
+miR187-medaka-fertility/
+├─ README.md
+├─ .gitignore
+├─ CITATION.cff
+├─ environment.yml
+│
+├─ scripts/
+│ ├─ python/
+│ │ ├─ README.md # 3D imaging (Python)
+│ │ ├─ img_segment_ovary.py
+│ │ └─ img_quantify_follicles.py
+│ │
+│ └─ R/
+│ ├─ README.md # Imaging helpers / plotting (R)
+│ └─ img_viz3D.R
+│
+├─ notebooks/
+│ └─ BRBseq_analysis.Rmd # Transcriptomic pipeline (BRB-seq)
+│
+├─ data/
+│ └─ README.md # Accessions and metadata only
+│
+├─ results/
+│ ├─ figures/
+│ └─ tables/
+│
+└─ docs/
+└─ README.md # References, notes, supplementary info
+```
+
 ### Quick index
 
 | Task | Where to look |
