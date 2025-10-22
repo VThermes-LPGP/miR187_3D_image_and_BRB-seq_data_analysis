@@ -49,7 +49,7 @@ renv::restore()           # installs all the package versions recorded in renv.l
 
 1-Clone the repository :
 ```bash
-git clone https://github.com/<your-username>/miR187-medaka-fertility.git
+git clone https://github.com/S-Gay/miR187-medaka-fertility.git
 cd miR187-medaka-fertility
 ```
 
