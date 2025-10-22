@@ -85,10 +85,10 @@ cd miR187-medaka-fertility
 ```
 
 2-Download datasets
-See data/README.md for dataset links and accession numbers.
+See `data/README.md` for dataset links and accession numbers.
 
 3-Run the analyses
-Imaging: run the Python scripts in scripts/python/
+Imaging: run the Python and R scripts in `scripts/python/` and in `scripts/R/`
 Transcriptomics: open and run the R Markdown notebook notebooks/BRBseq_analysis.Rmd
 
 ## If you use this code, please cite:
