@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Gay"
+  given-names: "Stephanie"
+  orcid: "https://orcid.org/0000-0000-0000-0000"
+- family-names: "Thermes"
+  given-names: "Violette"
+  orcid: "https://orcid.org/0000-0000-0000-0000"
+title: "Unveiling the role of mir-187 in adult ovarian follicle growth and female fecundity in medaka (Oryzias latipes)"
+version: 1.0.0
+doi: 10.5281/zenodo.xxxxxxx
+date-released: 2025-10-22
+url: "https://github.com/S-Gay/miR-187-medaka-fertility"
