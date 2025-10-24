@@ -15,8 +15,8 @@ To identify and characterize genes potentially regulated by miR-187-3p that may 
 Raw read alignment and gene quantification were carried out using the [Nextflow RNAseq pipeline](https://forgemia.inra.fr/lpgp/rnaseq), developed and maintained by the INRAE LPGP bioinformatics team.  
 
 This automated workflow includes:  
-Transcriptome alignment and quantification with Alevin-fry (PMID: 37034702) via its simpleaf wrapper,  
-Genome alignment and exon-level quantification with STARsolo (PMID: 23104886).  
+Transcriptome alignment and quantification with *Alevin-fry* ([PMID: 37034702](https://pubmed.ncbi.nlm.nih.gov/37034702/)) via its simpleaf wrapper,  
+Genome alignment and exon-level quantification with *STARsolo* ([PMID: 23104886](https://pubmed.ncbi.nlm.nih.gov/23104886/)).  
 Execution was performed on an HPC cluster using SLURM job scheduling, following the pipeline configuration.  
 
 The resulting gene-level count matrices (STAR_SOLO_counts.xls) served as input for the downstream analyses described below.
