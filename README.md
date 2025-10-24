@@ -23,8 +23,9 @@ miR187-medaka-fertility/
 │ └─ img_viz3D.R
 │
 ├─ BRB-seq_transcriptomic_analysis/
-│ ├─ README.md 
-│ └─ BRBseq_analysis.Rmd # Transcriptomic pipeline (BRB-seq)
+│ ├─ README.md
+│ └─ data/        # input files
+│ └─ BRBseq_analysis.Rmd       # Transcriptomic pipeline 
 │
 └─ docs/
 └─ README.md # References, notes, supplementary info
