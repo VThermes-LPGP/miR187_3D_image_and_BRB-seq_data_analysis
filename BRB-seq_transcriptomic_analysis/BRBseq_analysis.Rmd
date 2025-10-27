@@ -1,0 +1,911 @@
+---
+title: "BRB-seq analysis — miR-187 KO vs WT (medaka)"
+author:
+  - name: Stéphanie Gay
+    affiliation: >
+      Institut National de Recherche pour l’Agriculture, l’Alimentation et l’Environnement (INRAE)  
+      Laboratoire de Physiologie et Génomique des Poissons, 35000 Rennes, France
+
+output:
+  BiocStyle::html_document:
+    highlight: tango
+    code_folding: none
+    toc_float: TRUE
+    toc_depth: 6
+
+---
+
+```{r setup,include=FALSE}
+# library
+library(data.table)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(biomaRt)
+library(ggrepel)
+library(ComplexHeatmap)
+library(R.utils)
+library(ViSEAGO)
+library(clusterProfiler)
+library(KEGGREST)
+library(org.Hs.eg.db)
+library(dplyr)
+library(tidyr)
+library(forcats)
+
+# knitr document options
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.width   = 4,
+  fig.path    = "figs/",
+  comment     = NA,
+  warning     = FALSE,
+  message     = FALSE
+)
+
+# Define output directories
+out_dir <- "./data/output"
+
+# color palette
+palette=c(
+    "darksalmon","cyan","orchid","midnightblue","hotpink",
+    "sienna","aquamarine","royalblue","forestgreen","salmon","maroon",
+    "green","deepskyblue","olivedrab","springgreen","limegreen","magenta",
+    "peru","tan","steelblue","orange","burlywood","skyblue","red",
+    "darkslateblue","plum","goldenrod","cadetblue","indianred","pink",
+    "slateblue","turquoise","darkorchid","cornflowerblue","darkolivegreen",
+    "orangered","powderblue","rosybrown","darkgoldenrod","seagreen",
+     "darkturquoise","thistle","dodgerblue","sandybrown","purple","tomato",
+    "deeppink", "darkmagenta","darkred","darkkhaki","coral","lawngreen",
+    "darkorange","black","chocolate","firebrick","darkseagreen","blue",
+    "navy","darkgreen"
+)
+
+```
+
+This notebook reproduces the main steps of the BRB-seq transcriptomic analysis used in the article entitled <u>Unveiling the role of mir-187 in adult ovarian follicle growth and female fecundity in medaka (Oryzias latipes)</u>.
+
+It focuses on two key objectives:
+
+  **- Differential gene expression and KEGG pathway analysis:**  
+
+To compare transcriptomic profiles between miR-187⁻/⁻ mutants and wild-type (WT) medaka ovaries, and to explore the biological pathways affected by miR-187 deletion.
+
+  **- Identification of potential miR-187-3p targets:**   
+
+To identify and characterize genes potentially regulated by miR-187-3p that may contribute to ovarian function.
+
+# Differential gene expression and KEGG pathway analysis
+
+Normalized gene counts (≥10 reads per gene in at least four samples per condition) were analyzed using DESeq2 (PMID: 25516281) to identify genes significantly differentially expressed between miR-187⁻/⁻ and WT groups (adjusted p < 0.05).  
+
+In this part, the codes included vizualization of the DEGs through volcano plots for overall DEG distribution, Principal Component Analysis (PCA) for sample clustering, and Hierarchical clustering heatmaps (HCL) showing co-expression patterns using Pearson correlation (genes) and Euclidean distance (samples) with Ward.D2 linkage.  
+
+Significant DEGs were further analyzed for functional enrichment using KEGG pathway analysis, enabling the identification of biological pathways and molecular processes affected by miR-187 disruption.
+
+## Data processing and differential expression analysis
+
+The script below:
+
+1. **Reads** STARsolo gene-counts (`.xls`) produced by the Nextflow pipeline.  
+2. **Builds** a sample reference table from column names (age, condition, tissue, sample).  
+3. **Prepares DESeq2** inputs and **filters** genes (≥ 10 reads in ≥ 4 samples per group).  
+4. **Runs DESeq2** contrasts for the requested comparisons (defined in `comb`, filtered by `cdt`).  
+5. **Annotates** genes with Ensembl symbols via *biomaRt* (*Oryzias latipes* dataset).  
+6. **Exports** normalized counts, VST, z-scaled VST, and merged differential-expression results.
+7. **Processes ortholog reference table**, filters high-confidence homologs, and annotates all DE output files automatically.
+8. **Summarizes significant DEGs (padj < 0.05)**, counts up- and down-regulated genes for each contrast, and displays the results in a summary table.
+
+```{r DA, echo=TRUE} 
+# ---- 1- Read STARsolo/Nextflow counts ----------------------------------------
+Data<-data.table::fread("./data/input/STAR_SOLO_counts.xls") 
+# STAR_SOLO_counts corresponds to gene-level count matrices obtained using the Nextflow RNAseq pipeline (details in the README.md file)
+
+# ---- 2- Build the ref table -------------------------------------------------
+ref<-data.table::data.table(samples=names(Data)[-1])
+
+ref[,tag:=samples]
+ref[,tag:=sub("dph","dph_",tag)]
+ref[,tag:=sub("ovaire","_ovaire_",tag)]
+ref[,tag:=sub("ovary","_ovary_",tag)]
+ref[,tag:=sub("brain","_brain_",tag)]
+ref <- ref[, { tmp <- unlist(strsplit(tag, "_")); list(age = tmp[1], condition = tmp[2], tissue = tmp[3], sample = tmp[4]) }, by = samples]
+
+ref[,condition:=sub("slash","",condition)]
+ref[,group:=factor(paste(condition,age,tissue,sep="."))]
+
+data.table::fwrite(ref,"./data/output/samples.txt", sep="\t", quote=FALSE)
+
+# ---- 3- Prepare data for the DESeq2 & filter genes ---------------------------
+ref[,tissue:=paste(age,tissue)]
+cdt="ovary"
+
+# DEseq object
+countData<-as.matrix(Data[,grep(cdt,names(Data)),with=FALSE])
+row.names(countData)<-Data$gene_id
+subset<-ref[data.table::like(tissue,cdt)]
+
+colData=as.data.frame(subset$group, row.names=subset$samples)
+colnames(colData)<-"group"
+
+gse<-DESeq2::DESeqDataSetFromMatrix(countData, colData, design=~0 + group)
+
+Data<-data.table::data.table(DESeq2::counts(gse), keep.rownames = TRUE)
+Data<-data.table::melt.data.table(Data, id.vars ="rn", variable.name = "samples")
+Data<-merge(Data, ref, by="samples")
+
+# Filters genes (≥ 10 reads in ≥ 4 samples per group)
+genes<-unique(Data[value>=10,.N,by=.(rn,group)][N>=4,rn])
+gse<-gse[names(gse)%in%genes]
+
+# ---- 4- DESeq2 ---------------------------------------------------------------
+dds<-DESeq2::DESeq(gse)
+
+comb<-data.table::data.table(
+    gp1=c("miR187.90dph.brain","miR202.30dph.ovaire","miR202.90dph.ovaire","miR187.90dph.ovary"),
+    gp2=c("WT.90dph.brain","WT.30dph.ovaire","WT.90dph.ovaire","WT.90dph.ovary"))
+comb<-comb[data.table::like(gp1,cdt)]
+
+Data<-lapply(1:nrow(comb),function(x){
+    Data<-data.table::data.table(as.data.frame(DESeq2::results(dds, contrast=c("group",comb[x,gp1],comb[x,gp2]),)), keep.rownames = TRUE)
+    names(Data)[1]<-"gene_id"
+    names(Data)[-1]<-paste(comb[x,gp1],"vs",comb[x,gp2],"_",names(Data)[-1],sep="")
+    Data
+})
+
+Data<-Reduce(function(...){merge(..., by="gene_id", all=TRUE)}, Data)
+
+# ---- 5- Add annotation with ensembl symbols ----------------------------------
+mart<-biomaRt::useEnsembl("genes", host="www.ensembl.org", )
+myspecies<-biomaRt::useDataset("olatipes_gene_ensembl", mart)
+annot<-data.table::data.table(biomaRt::getBM(attributes =c("ensembl_gene_id","external_gene_name"), mart =myspecies))
+colnames(annot)<-c("gene_id","gene_symbol")
+annot[annot==""]<-NA     # replace black by NA
+
+Data<-merge(Data, annot, by="gene_id", all.x=TRUE)
+
+# ---- 6- Export normalized counts, VST,z-scaled VST and merged differential expression results ---
+gseN<-DESeq2::estimateSizeFactors(gse)
+norms<-DESeq2::counts(gseN, normalized=TRUE)
+norms<-data.table::data.table(gene_id=row.names(norms), norms)
+
+data.table::fwrite( norms, file=paste0("./data/output/normscount_",gsub("\\.","_",comb$gp1),".xls"), sep="\t", quote=FALSE, na=NA)
+
+# vst - Variance Stabilizing Transformation
+mat<-SummarizedExperiment::assay(DESeq2::vst(gse))
+norms<- data.table::data.table(mat, keep.rownames = TRUE)
+names(norms)[1]<-"gene_id"
+data.table::fwrite(norms, file=paste0("./data/output/vst_",gsub("\\.","_",comb$gp1),".xls"), sep="\t", quote=FALSE, na=NA)
+
+# z-scaled VST
+norms<-t(scale(t(mat)))
+norms<- data.table::data.table(norms, keep.rownames = TRUE)
+names(norms)[1]<-"gene_id"
+data.table::fwrite(norms, file=paste0("./data/output/vst_scaled_",gsub("\\.","_",comb$gp1),".xls"), sep="\t", quote=FALSE, na="NA")
+
+# Merge VST and normalized counts
+vst<-data.table::fread(paste0("./data/output/vst_",gsub("\\.","_",comb$gp1),".xls"))
+vst<-data.table::melt.data.table(vst, id.vars = "gene_id", variable.name = "samples", value.name = "vst")
+
+normscount<-data.table::fread(paste0("./data/output/normscount_",gsub("\\.","_",comb$gp1),".xls"))
+normscount<-data.table::melt.data.table(normscount, id.vars = "gene_id", variable.name = "samples", value.name = "normscount")
+
+Dat<-merge(vst, normscount, by=c("gene_id","samples"))
+Dat<-merge(Dat, ref, by="samples")
+
+# computes per-group summary stats (mean/variance/CV) for each gene
+Dat<-Dat[, .(vst_mean=mean(vst,na.rm=TRUE), vst_var=var(vst,na.rm=TRUE), normscount_mean=mean(normscount,na.rm=TRUE), normscount_var=var(normscount,na.rm=TRUE)), by=.(group,gene_id)]
+
+Dat[, `:=`(vst_cv=sqrt(vst_var)/vst_mean, normscount_cv=sqrt(normscount_var)/normscount_mean)]
+Dat<-data.table::dcast.data.table(Dat, gene_id ~ group, value.var = c("vst_mean","vst_var","vst_cv","normscount_mean","normscount_var","normscount_cv"))
+
+Data<-merge(Data, Dat, by="gene_id", all.x=TRUE)
+
+data.table::fwrite(Data, file = file.path(out_dir, paste0("DA_", gsub("\\.", "_", comb$gp1), ".xls")), sep = "\t", quote = FALSE)
+
+# ---- 7- Ortholog Annotation Step ---------------------------------------------
+ref<-data.table::fread("./data/input/orthologs.txt.gz")
+
+ref<-ref[orthology_confidence==1,.(ortho_gene_name=paste(unique(toupper(homolog_associated_gene_name)),collapse=";")),by=gene_id]
+ref[,ortho_gene_name:=gsub("^;|;$","",ortho_gene_name)]
+
+files <- list.files(out_dir, pattern = "^DA_", full.names = TRUE)
+
+for(i in files){
+    Data<-data.table::fread(i)
+    Data<-merge(Data, ref, by="gene_id", all.x=TRUE, sort=FALSE)
+    data.table::fwrite(Data, file=i, sep="\t", quote=FALSE)
+}
+
+# ---- 7- number of differentially expressed genes with padj < 0.05 ------------
+files<-list.files("./data/output", pattern = "^DA.*ovary", full.names = TRUE)
+
+Data<-lapply(files,function(x){
+    Data<-data.table::fread(x, select=c(1,3,7))
+    contrast<-sub("_.+","",names(Data)[2])
+    names(Data)[-1]<-sub("^.+_","",names(Data)[-1])
+
+    Data<-Data[padj<0.05]
+
+    Data[log2FoldChange>0,sign:="up"]
+    Data[log2FoldChange<0,sign:="down"]
+    
+    data.table::data.table(contrast, Data[,.(count=.N),by=sign])
+})
+
+Data<-data.table::rbindlist(Data)
+
+output_file <- file.path(out_dir, "DE_genes_count_summary.csv")
+data.table::fwrite(Data, file = output_file, sep = ",", quote = FALSE)
+
+```
+
+## Visualization of differential expression results
+
+The following code blocks visualize differential expression outcomes through:  
+
+1. **Hierarchical clustering (HCL)** for co-expression patterns.  
+2. **Principal Component Analysis (PCA)** for global sample variation.  
+3. **Volcano plots** highlighting significantly regulated genes.  
+
+### Hierarchical Clustering (HCL)
+
+The similarities between proteins groups (rows) were calculated with Pearson’s correlation coefficient as a measure of co-expression. To group together proteins groups sharing similar abundance profile, we applied a hierarchical clustering method defined by the ward.D2 linkage aggregation criterion. The results were displayed as a dendrogram.The similarities between samples (columns) were calculated with euclidean distance. To group samples together, we applied a hierarchical clustering method defined by the ward.D2 linkage aggregation criterion. The results were displayed as a dendrogram.
+
+```{r hcl_DE_pearson}
+cdt="miR187_90dph_ovary"
+ref<-data.table::fread("./data/output/samples.txt")
+var=strsplit(cdt,"_")[[1]]
+ref<-ref[age==var[2] & tissue==var[3]]
+
+Data<-data.table::fread(paste0("./data/output/vst_scaled_",cdt,".xls"))
+data.table::setorder(Data,gene_id)
+
+Results<-data.table::fread(paste0("./data/output/DA_",cdt,".xls"))
+data.table::setorder(Results,gene_id)
+
+padj<-Results[,grep("padj",names(Results)),with=FALSE]
+padj<-padj<0.05
+loc<-apply(padj,1,sum,na.rm=TRUE)>0
+padj<-data.table::data.table(padj[loc,])
+
+# tag
+padj[padj==TRUE]<-"significant"
+padj[padj==FALSE]<-"not significant"
+
+mat<-Data[loc,-1,with=FALSE]
+
+Dist<-as.dist(
+    t(
+        1-cor(
+            t(
+               mat
+            ),
+            method="pearson",
+            use="pairwise.complete.obs"
+        )
+    )
+)
+
+hr<-fastcluster::hclust(Dist, method = "ward.D2")
+
+# tissue
+col1=RColorBrewer::brewer.pal(length(unique(ref$tissue)),"Set1")
+col1=col1[1:length(unique(ref$tissue))]
+names(col1)<-unique(ref$tissue)
+
+# dose
+col2=RColorBrewer::brewer.pal(length(unique(ref$age)),"Set2")
+col2=col2[1:length(unique(ref$age))]
+names(col2)<-unique(ref$age)
+
+# condition
+col3=RColorBrewer::brewer.pal(length(unique(ref$condition)),"Set3")
+col3=col3[1:length(unique(ref$condition))]
+names(col3)<-unique(ref$condition)
+
+# ---- Heatmap -----------------------------------------------------------------
+outfile <- file.path(out_dir, sprintf("hcl_DE_%s_pearson.png", cdt))
+png(outfile, width = 1500, height = 1500)
+
+anno_df <- as.data.frame(ref[, .(tissue, age, condition)])
+
+ht <- ComplexHeatmap::Heatmap(
+  mat,
+  col = circlize::colorRamp2(c(min(mat, na.rm=TRUE), 0, max(mat, na.rm=TRUE)),
+                             c("#2166AC", "white", "#99000D")),
+  cluster_rows   = hr,
+  cluster_columns = TRUE,
+  show_row_names = TRUE,
+  show_column_names = TRUE,
+  name = "z score",
+  top_annotation = ComplexHeatmap::HeatmapAnnotation(
+    df = anno_df,
+    col = list(
+      tissue    = col1,  
+      age       = col2,
+      condition = col3
+    ),
+    annotation_name_gp = grid::gpar(fontsize = 10)
+  )
+)
+
+ComplexHeatmap::draw(ht)
+
+if (grDevices::dev.cur() > 1) invisible(grDevices::dev.off())
+```
+
+### Principal Component Analysis (PCA)
+
+This section of code performs a Principal Component Analysis (PCA) on variance-stabilized expression data (vst) for genes significantly differentially expressed (padj < 0.05).It visualizes sample clustering based on expression profiles, labels the percentage of explained variance for each component, and saves the PCA plot in both PNG and PDF formats.
+
+```{r PCA}
+cdt="miR187_90dph_ovary"
+vst_file <- file.path(out_dir, sprintf("vst_%s.xls", cdt))
+Data <- data.table::fread(vst_file)
+
+da_file <- file.path(out_dir, sprintf("DA_%s.xls", cdt))
+Results <- data.table::fread(da_file)
+
+padj_cols <- grep("padj", names(Results), value = TRUE)
+if (length(padj_cols) == 0) padj_cols <- "padj"
+
+sig_genes <- Results[ , any(.SD < 0.05, na.rm = TRUE), by = gene_id, .SDcols = padj_cols][V1 == TRUE, gene_id]
+
+Data_sig <- Data[gene_id %in% sig_genes]
+
+noNA <- complete.cases(Data_sig[, -1, with = FALSE])
+Data_sig <- Data_sig[noNA]
+
+# ---- PCA ---------------------------------------------------------------------
+p <- prcomp(Data_sig[, -1, with = FALSE], center = TRUE, scale. = TRUE)
+
+p.val <- data.table::data.table(factoextra::get_eigenvalue(p), keep.rownames = TRUE)
+p.var <- data.table::data.table(factoextra::get_pca_var(p)$coord, keep.rownames = TRUE)
+setnames(p.var, "rn", "samples")
+
+ref <- data.table::fread(file.path(out_dir, "samples.txt")) 
+p.var <- merge(ref, p.var, by = "samples")
+
+g <- ggplot2::ggplot(p.var, ggplot2::aes(x = Dim.1, y = Dim.2, color = group)) +
+  ggplot2::geom_point(size = 3) +
+  ggplot2::theme_bw() +
+  ggplot2::xlab(paste0(
+    "Dimension 1 ",
+    round(p.val[rn == "Dim.1", variance.percent], 2),
+    "% of inertia"
+  )) +
+  ggplot2::ylab(paste0(
+    "Dimension 2 ",
+    round(p.val[rn == "Dim.2", variance.percent], 2),
+    "% of inertia"
+  )) +
+  ggplot2::ggtitle(sprintf("PCA on padj<0.05 genes (%s)", cdt))
+
+ggplot2::ggsave(filename = file.path(out_dir, sprintf("pca_vst_%s_samples_padj0.05.png", cdt)), plot = g, width = 8, height = 6, dpi = 300)
+```
+
+### Volcano plots
+
+This script generates volcano plots. It visualizes gene expression changes by plotting log2 fold change versus –log10 adjusted p-value, highlights significant genes, and exports the plots in PNG format for each dataset.
+
+```{r volcanoplot}
+files<-list.files("./data/output", pattern = "^DA.*ovary", full.names=TRUE)
+
+for (i in files) {
+  Data <- data.table::fread(
+    i,
+    select    = c(1, 3, 7),
+    col.names = c("gene_id", "log2FoldChange", "padj")
+  )
+
+  Data$color <- ifelse(Data$padj < 0.05, "Significant", "Not Significant")
+
+  p <- ggplot(Data, aes(x = log2FoldChange, y = -log10(pmax(padj, .Machine$double.xmin)))) +
+    geom_point(aes(fill = color, color = color), size = 3, shape = 21) +
+    scale_fill_manual(values = c("Significant" = "lightcoral", "Not Significant" = "lightgrey")) +
+    scale_color_manual(values = c("Significant" = "black", "Not Significant" = "darkgrey")) +
+    theme_classic() +
+    xlim(c(-8, 8)) +
+    geom_vline(xintercept = 0, lty = "dashed") +
+    geom_hline(yintercept = -log10(0.05), lty = "dashed")
+
+  outprefix <- sub("\\.xls$", "", gsub("DA", "volcano", i))
+
+  ggsave(paste0(outprefix, ".png"), plot = p, width = 8, height = 6, dpi = 300)
+}
+```
+
+## Functional enrichment and pathway analysis
+
+The script below:
+
+1. **Filters significant DEGs** (padj < 0.05 and 0.5 < log2FC < -0.5) from medaka ovary datasets.  
+2. **Maps filtered genes to human orthologs via biomaRt**, selecting the best hit based on sequence identity and **converts Ensembl gene IDs** to Entrez IDs for KEGG enrichment.  
+3. **Performs KEGG pathway enrichment** using *clusterProfiler* and the *KEGG database*.  
+4. **Excludes pathways** related to human diseases to focus on biologically relevant processes.  
+5. **Visualizes** significant pathways using dotplots and barplots.  
+6. **Extracts genes associated with enriched pathways** and exports consolidated KEGG gene tables.
+
+```{r KEGG_KEGGREST_perc_id package}
+# ---- 1- Filter significant DEGs ----------------------------------------------
+kegg_dir <- file.path(out_dir, "kegg")
+if (!dir.exists(kegg_dir)) dir.create(kegg_dir, recursive = TRUE)
+files <- list.files(out_dir, pattern = "^DA.*ovary", full.names = TRUE)
+
+all_data <- rbindlist(lapply(files, function(f) {
+  fread(f, select = c(1, 3, 7, 8), col.names = c("gene_id", "log2FoldChange", "padj", "gene_symbol"))
+}), fill = TRUE)
+
+all_data_filtered <- all_data[padj < 0.05 & abs(log2FoldChange) > 0.5]
+
+filtered_path <- file.path(out_dir, "DE_outside_0.5_filtered.xls")
+fwrite(all_data_filtered, filtered_path, sep = "\t", quote = FALSE)
+
+targets <- unique(all_data_filtered[, .(gene_id)])
+
+ref <- fread(file.path(out_dir, "DA_miR187_90dph_ovary.xls"), select = "gene_id")
+
+# ---- 2- Map filtered genes to human orthologs via biomaRt---------------------
+hsa <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl", mirror = "uswest")
+
+hsa.ortho <- getBM(
+  attributes = c("ensembl_gene_id",
+                 "olatipes_homolog_ensembl_gene",
+                 "olatipes_homolog_orthology_type",
+                 "olatipes_homolog_perc_id"),
+  mart = hsa
+)
+
+DEG.hsa.ortho <- hsa.ortho %>%
+  dplyr::filter(olatipes_homolog_ensembl_gene %in% targets$gene_id)
+
+DEG.hsa.ortho_filtered <- DEG.hsa.ortho %>%
+  dplyr::filter(!is.na(olatipes_homolog_perc_id)) %>%
+  dplyr::group_by(olatipes_homolog_ensembl_gene) %>%
+  dplyr::slice_max(order_by = olatipes_homolog_perc_id, n = 1, with_ties = FALSE) %>%
+  dplyr::ungroup()
+
+DEG.hsa.ortho_filtered_gene_id <- getBM(
+  attributes = c("ensembl_gene_id", "entrezgene_id"),
+  mart = hsa,
+  filters = "ensembl_gene_id",
+  values = unique(DEG.hsa.ortho_filtered$ensembl_gene_id)
+)
+
+# ---- 3- Perform KEGG pathway enrichment---------------------------------------
+DEG_enrich_result <- enrichKEGG(
+  gene = DEG.hsa.ortho_filtered_gene_id$entrezgene_id,
+  organism = "hsa",
+  keyType = "ncbi-geneid",
+  pvalueCutoff = 0.05,
+  qvalueCutoff = 0.2
+)
+
+# ---- 4- Exclude pathways related to human diseases ---------------------------
+if (!is.null(DEG_enrich_result) && nrow(DEG_enrich_result@result) > 0) {
+  DEG_enrich_result@result <- DEG_enrich_result@result %>%
+    dplyr::filter(!(Description %in% c(
+      "Human papillomavirus infection",
+      "Proteoglycans in cancer",
+      "Breast cancer",
+      "Arrhythmogenic right ventricular cardiomyopathy",
+      "Dilated cardiomyopathy"
+    )))
+}
+
+# ---- 5- Visualize enriched KEGG pathway --------------------------------------
+# dotplot
+if (!is.null(DEG_enrich_result) && nrow(DEG_enrich_result@result) > 0) {
+  p_dot <- dotplot(DEG_enrich_result, showCategory = 15) +
+    theme(axis.text.y = element_text(size = 18))
+  ggsave(file.path(kegg_dir, "dotplot_kegg_enrichment_15.png"),plot = p_dot, width = 10, height = 8, dpi = 600)
+} else {
+  message("No enriched KEGG pathways found for these genes")
+}
+
+if (!is.null(DEG_enrich_result) && nrow(DEG_enrich_result@result) > 0) {
+  KEGG_genes <- DEG_enrich_result@result %>%
+    dplyr::filter(p.adjust < 0.05) %>%
+    dplyr::select(Description, geneID) %>%
+    dplyr::rename("KEGG pathway" = Description) %>%
+    tidyr::separate_rows(geneID, sep = "/") %>%
+    dplyr::left_join(
+      DEG.hsa.ortho_filtered_gene_id %>% mutate(entrezgene_id = as.character(entrezgene_id)),
+      by = c("geneID" = "entrezgene_id")
+    )
+} else {
+  KEGG_genes <- data.frame()
+}
+
+write.csv(as.data.frame(DEG_enrich_result), file.path(kegg_dir, "kegg_enrichment_result_clusterProfiler.csv"), row.names = FALSE)
+write.csv(KEGG_genes, file.path(kegg_dir, "kegg_pathway_genes_table.csv"), row.names = FALSE)
+
+# Barplot
+if (!is.null(DEG_enrich_result) && nrow(DEG_enrich_result@result) > 0) {
+  p_bar <- DEG_enrich_result@result %>%
+    dplyr::filter(p.adjust < 0.05) %>%
+    dplyr::mutate(Description = fct_reorder(Description, -log10(p.adjust))) %>%
+    ggplot(aes(x = -log10(p.adjust), y = Description)) +
+    geom_col(fill = "steelblue") +
+    geom_vline(xintercept = -log10(0.05), linetype = "dashed", color = "red") +
+    labs(
+      title = "KEGG pathway enrichment (DEGs)",
+      x = expression(-log[10](adjusted~p~value)),
+      y = "KEGG Pathway"
+    ) +
+    theme_minimal()
+  
+  ggsave(file.path(kegg_dir, "barplot_kegg_enrichment.png"), plot = p_bar, width = 10, height = 8, dpi = 300)
+}
+
+# ---- 6- Extract genes associated with enriched pathways ---------------------
+if (nrow(KEGG_genes) > 0) {
+  merged1 <- merge(all_data_filtered, DEG.hsa.ortho_filtered,
+                   by.x = "gene_id", by.y = "olatipes_homolog_ensembl_gene")
+  final_table <- merge(merged1, KEGG_genes, by = "ensembl_gene_id")
+  final_table <- final_table[, c("gene_id", "gene_symbol", "ensembl_gene_id", "KEGG pathway")]
+  write.csv(final_table, file = file.path(kegg_dir, "genes_with_kegg_pathways.csv"), row.names = FALSE)
+}
+```
+
+# Identification of potential miR-187-3p targets genes
+
+The identification of potential miR-187-3p target genes was carried out in two main steps:
+
+  **- Retrieval of predicted miR-187-3p target genes from TargetScan**  
+
+All putative target genes of miR-187-3p were first retrieved from the TargetScan database.  
+In this dataset, genes are identified by their transcript IDs; therefore, a reference table linking *gene_id* and *transcript_id* was required to match these targets with our differential expression results obtained from DESeq2.
+
+  **- Identification of high-confidence target genes**  
+
+Candidate miR-187-3p target genes were filtered based on the pipeline by Janati-Idrissi et al. (2024), which consist of statistical significance (padj < 0.05), the presence of high-confidence 7-mer/8-mer binding sites, moderate expression changes (0 < log₂FC < 1), reduced inter-individual variability in WT (BH<0.05), and increased variability in KO (CV₍KO₎ > 1.1 × CV₍WT₎). 
+These criteria aimed to identify genes that are moderately downregulated and likely to be direct functional 
+
+## Retrieval of predicted miR-187-3p target genes
+
+In the following code blocks, we first prepared the necessary input data — including transcript mapping, context score cleaning, and IVV computation — to then predict and integrate potential miR-187-3p target genes using TargetScan.
+
+### Data preparation for TargetScan targets
+
+The script below:  
+
+1. **Retrieves the longest transcript** per gene from Ensembl and **builds a transcript–gene reference table**.  
+2. **Cleans the TargetScan context score file** to ensure consistent and standardized identifiers.  
+3. **Initializes a summary table** to track the number of genes retained after each filtering step.  
+4. **Computes inter-individual variability** (IVV) metrics and adjusts their p-values (BH) for later integration with TargetScan predictions.
+
+```{r data_preparation_TargetScan}
+# ---- 1- Retrieves the longest transcript and build a ref table ---------------
+options(RCurlOptions = list(capath = system.file("CurlSSL", "cacert.pem", package = "RCurl")))
+output_file <- file.path(out_dir, "transcript_to_gene_map_medaka_longest.csv")
+
+if (!file.exists(output_file)) {
+  ensembl <- useEnsembl(
+    biomart = "genes",
+    dataset = "olatipes_gene_ensembl",
+    host = "https://www.ensembl.org"
+  )
+  
+  transcript_lengths <- getBM(attributes = c("ensembl_gene_id", "ensembl_transcript_id", "transcript_length"), mart = ensembl  )
+  names(transcript_lengths) <- c("gene_id", "transcript_id", "transcript_length")
+  
+  dt <- as.data.table(transcript_lengths)
+  dt_longest <- dt[order(-transcript_length), .SD[1], by = gene_id]
+  
+  fwrite(dt_longest[, .(transcript_id, gene_id)], output_file)
+}
+
+# ---- 2- Cleans the TargetScan context score file -----------------------------
+context_file <- "data/input/miRNA187_contextscore_output_camille.txt"
+context <- fread(context_file, select = c("a_Gene_ID", "Site_type"))
+context[, transcript_id := sub("transcript:", "", a_Gene_ID)]
+
+fwrite(context, file.path(out_dir, "contextscore_clean.csv"))
+
+# ---- 3- Initializes a summary table ------------------------------------------
+# Initialiser le tableau récapitulatif final
+summary_table_ovary <- data.frame(File = character(), Num_Lines = integer(), stringsAsFactors = FALSE)
+
+# ---- 4- Computes inter-individual variability and adjusts their BH  ----------
+# files
+files<-list.files("./data/output", pattern="normscount", full.names = TRUE)
+
+# Inter Individual Variation
+for(i in files){
+    Data<-data.table::fread(i)
+    Data<-data.table::melt.data.table(Data, id.vars = "gene_id"    )
+    Data[,variable:=gsub("(brain|ova).+$|^.+dph","",variable)]
+    Data<-Data[,
+        {Data<-data.table::data.table(variable=variable, value=value)
+            # wt
+            wt<-Data[variable=="WT",value]
+            # ko
+            ko<-Data[variable!="WT",value]
+            # WT internal variablility
+            internal<-abs(outer(wt,wt,"-"))
+            # upper triangle
+            tri<-upper.tri(internal)
+            # extract
+            internal<-internal[tri]
+            # external variability
+            external<-abs(outer(wt,ko,"-"))
+            # upper triangle
+            tri<-upper.tri(external)
+            # extract
+            external<-external[tri]
+        
+            # wilcox test
+            pval=try(wilcox.test(internal,external,alternative='less')$p.value, silent=TRUE)
+        
+            tmp=summary(internal)
+            internal=data.table::data.table(t(as.vector(tmp)))
+            names(internal)<-paste("internal",names(tmp),sep="_")
+
+            tmp=summary(external)
+            external=data.table::data.table(t(as.vector(tmp)))
+            names(external)<-paste("external",names(tmp),sep="_")
+
+            data.table::data.table(internal, external, pval)}, by=gene_id]
+
+    # add BH
+    Data[,BH:=p.adjust(pval,method = "BH")]
+    
+    data.table::fwrite(Data, file=sub("normscount","IVV",i), sep="\t", quote=FALSE)
+}
+```
+
+### Prediction of miR-187-3p target genes from TargetScan
+This section combines TargetScan and ovary datasets to identify, merge, and export miR-187-3p candidate target genes.
+
+```{r miR_selection_-3p}
+context <- fread("data/output/contextscore_clean.csv")
+map <- fread("data/output/transcript_to_gene_map_medaka_longest.csv")
+if (!"transcript_id" %in% names(map)) {
+  setnames(map, c("ensembl_transcript_id", "ensembl_gene_id"), c("transcript_id", "gene_id"))
+}
+
+context_mapped <- merge(context[, .(transcript_id, Site_type)], map, by = "transcript_id", all.x = TRUE)
+context_filtered <- context_mapped[!is.na(Site_type) & Site_type != "" & !is.na(gene_id)]
+context_filtered[, site_type_targets := paste("miR-187-3p", Site_type, sep = "_")]
+site_collapsed <- context_filtered[ , .(site_type_targets = paste(sort(unique(site_type_targets)), collapse = ";")), by = gene_id]
+
+file_ovary <- list.files(out_dir, pattern = "^DA.*ovary", full.names = TRUE)[1]
+stopifnot(length(file_ovary) == 1)
+ovary_data <- fread(file_ovary)
+old_names <- names(ovary_data)
+new_names <- sub("miR187.90dph.ovaryvsWT.90dph.ovary_", "", old_names)
+setnames(ovary_data, old = old_names, new = new_names)
+
+all_data <- merge(ovary_data, site_collapsed, by = "gene_id", all.x = TRUE)
+
+# Add BH (IVV)
+ivv_file <- sub("DA", "IVV", file_ovary)
+IVV <- fread(
+    ivv_file,
+    select    = c("gene_id", "internal_Mean", "external_Mean", "BH"),
+    col.names = c("gene_id", "internal_Mean", "external_Mean", "BH")
+  )
+all_data <- merge(all_data, IVV, by = "gene_id", all.x = TRUE)
+
+outfile <- file.path(out_dir, "target_ovary.xls")  
+fwrite(all_data, file = outfile, sep = "\t", quote = FALSE)
+
+message("Wrote: ", outfile, " (", nrow(all_data), " rows)")
+```
+
+## Identification of high-confidence target genes
+
+### Step selection for miR-187-3p target genes
+
+Candidate targets were then selected based on the following criteria:  
+
+  - Differentially expressed genes with **padj < 0.05**  
+  - Presence of high-confidence **7-mer** or **8-mer** target sites for miR-187-3p  
+  - Moderate expression change with and **0 < log2FoldChange < 1**  
+  - Inter-individual variability (IVV) in WT lower than the fold-change between WT and KO, **BH<0.05**   
+  - Higher coefficient of variation in KO compared to WT, **CV_KO > 1.1 × CV_WT**  
+
+*padj<0.05*
+```{r padj<0.05, results='hide'}
+files <- list.files("./data/output",pattern = "target_ovary.xls",full.names = TRUE)
+
+lapply(files, function(file) {
+  data <- data.table::fread(file)
+  padj_col <- grep("padj", names(data), value = TRUE)
+  padj_values <- data[[padj_col]]
+  data <- data[padj_values < 0.05, ]
+  output_file <- file.path(out_dir, "target_ovary_padj.csv")
+  data.table::fwrite(data, file = output_file, sep = "\t", quote = FALSE)
+  
+  # Update the summary table
+  num_lines <- nrow(data)
+  summary_table_ovary <<- rbind(summary_table_ovary, 
+                                data.frame(File = "padj<0.05", Num_Lines = num_lines))
+})
+
+```
+
+*7-8mer*
+```{r 7-8mer, results='hide'}
+files <- list.files(out_dir, pattern = "target_ovary_padj.csv", full.names = TRUE)
+
+lapply(files, function(file) {
+  data <- data.table::fread(file)
+  data_filtered <- data[grepl("7mer|8mer", site_type_targets)]
+  output_file <- file.path(out_dir, "target_ovary_padj_7-8mer.csv")
+  data.table::fwrite(data_filtered, file = output_file, sep = "\t", quote = FALSE)
+  
+  # Update the summary table
+  num_lines <- nrow(data_filtered)
+  summary_table_ovary <<- rbind(summary_table_ovary,data.frame(File = "7-8mer", Num_Lines = num_lines))
+})
+```
+
+*0-1_log2FC*
+```{r 0-1_log2FC, results='hide'}
+files <- list.files(out_dir, pattern = "target_ovary_padj_7-8mer.csv", full.names = TRUE)
+
+lapply(files, function(file) {
+  data <- data.table::fread(file)
+  data_filtered <- data[log2FoldChange > 0 & log2FoldChange < 1]
+  output_file <- file.path(out_dir, "target_ovary_padj_7-8mer_0-1_log2FC.csv")
+  data.table::fwrite(data_filtered, file = output_file, sep = "\t", quote = FALSE)
+  
+  # Update the summary table
+  num_lines <- nrow(data_filtered)
+  summary_table_ovary <<- rbind(summary_table_ovary, data.frame(File = "0<log2FC<1", Num_Lines = num_lines))
+})
+```
+
+*BH<0.05*
+```{r BH<0.05, results='hide'}
+files <- list.files(out_dir, pattern = "target_ovary_padj_7-8mer_0-1_log2FC.csv", full.names = TRUE)
+
+lapply(files, function(file) {
+  data <- data.table::fread(file)
+  data_filtered <- data[BH < 0.05, ]
+  output_file <- file.path(out_dir, "target_ovary_padj_7-8mer_0-1_log2FC_BH.csv")
+  data.table::fwrite(data_filtered, file = output_file, sep = "\t", quote = FALSE)
+  
+  # Update the summary table
+  num_lines <- nrow(data_filtered)
+  summary_table_ovary <<- rbind(summary_table_ovary, data.frame(File = "BH<0.05", Num_Lines = num_lines))
+})
+```
+
+*cv1.1*
+```{r cv1.1, results='hide'}
+files <- list.files(out_dir, pattern = "target_ovary_padj_7-8mer_0-1_log2FC_BH.csv", full.names = TRUE)
+
+lapply(files, function(file) {
+  data <- data.table::fread(file)
+  required_cols <- c("normscount_cv_miR187.90dph.ovary", "normscount_cv_WT.90dph.ovary")
+  data_filtered <- data[normscount_cv_miR187.90dph.ovary > (1.1 * normscount_cv_WT.90dph.ovary), ]
+  output_file <- file.path(out_dir, "target_ovary_padj_7-8mer_0-1_log2FC_BH_cv1.1.csv")
+  data.table::fwrite(data_filtered, file = output_file, sep = "\t", quote = FALSE)
+  
+  # Update the summary table
+  num_lines <- nrow(data_filtered)
+  summary_table_ovary <<- rbind(summary_table_ovary, data.frame(File = "cv1.1", Num_Lines = num_lines))
+  
+  sorted_data <- data_filtered[order(baseMean)]
+
+  output_txt_file <- sub(".csv", "_cv1.1_List_Targets.txt", file)
+  write.table(sorted_data[, .(gene_id, baseMean, gene_symbol)], file = output_txt_file, quote = FALSE, row.names = FALSE, sep = "\t")
+})
+
+output_file_summary_ovary <- file.path(out_dir, "summary_table_ovary.csv")
+
+# Save summary table as CSV
+data.table::fwrite(summary_table_ovary, file = output_file_summary_ovary, sep = ",", quote = FALSE)
+```
+
+### List of miR-187-3p targets after step selection and vizualisation
+
+#### List of candidate identified
+
+```{r list_targets_display_kable, eval=TRUE, results = 'asis'}
+output_file_targets_ov <- file.path(out_dir, "target_ovary_padj_7-8mer_0-1_log2FC_BH_cv1.1_List_Targets.txt")
+gene_data_targets <- data.table::fread(output_file_targets_ov, fill = TRUE, na.strings = c("", "NA"))
+
+data.table::fwrite(gene_data_targets, file = output_file_targets_ov, sep = ",", quote = FALSE)
+```
+
+#### Volcano plot
+
+```{r volcanoplot_selection_test}
+target_file <- file.path(out_dir, "target_ovary_padj.csv")
+stopifnot(file.exists(target_file))
+
+Data <- fread(target_file) 
+
+needed <- c("gene_id","baseMean","log2FoldChange","padj","gene_symbol")
+missing <- setdiff(needed, names(Data))
+if (length(missing)) stop("Missing columns in target_ovary_padj.xls : ", paste(missing, collapse=", "))
+
+Data[, gene_id := as.character(gene_id)]
+
+# Gene of interest
+cv_file <- file.path(out_dir, "target_ovary_padj_7-8mer_0-1_log2FC_BH_cv1.1.csv")
+cv_all  <- fread(cv_file)
+
+needed_cv <- c("gene_id")  
+miss_cv <- setdiff(needed_cv, names(cv_all))
+if (length(miss_cv)) stop("Missing columns in le fichier cv : ", paste(miss_cv, collapse=", "))
+
+cv_all[, gene_id := as.character(gene_id)]
+goi_ids <- unique(na.omit(cv_all$gene_id))
+
+Data[, color := ifelse(gene_id %in% goi_ids, "Gene of Interest", "Other genes")]
+
+# Gene selected based on our criteria
+label_genes <- c("dpagt1","dnajc161","nr6a1a","sipa111","lonrf1", "armc5","zgc:153039","zbtb44","chd9","prrc2c")  # names entered manually
+
+padj_thresh <- 0.05
+lfc_thresh  <- 0.5
+safe_neglog10 <- function(x, eps = 1e-300) -log10(pmax(x, eps))
+
+Data <- Data[!is.na(log2FoldChange) & !is.na(padj)]
+Data[, mlp := safe_neglog10(padj)]
+
+make_volcano <- function(D, title = NULL,
+                         xlimits = c(-8, 8), ylimits = NULL,
+                         lfc_thr = lfc_thresh, padj_thr = padj_thresh,
+                         labels_vec = label_genes) {
+
+  idx_goi   <- D$color == "Gene of Interest"
+  idx_other <- !idx_goi
+
+  to_label <- D[!is.na(gene_symbol) & gene_symbol %in% labels_vec]
+
+  p <- ggplot(D, aes(x = log2FoldChange, y = mlp)) +
+    geom_point(data = D[idx_other], aes(fill = color, color = color),
+               size = 3, shape = 21) +
+    geom_point(data = D[idx_goi],   aes(fill = color, color = color),
+               size = 3, shape = 21) +
+
+    geom_text_repel(
+      data = to_label,
+      aes(label = gene_symbol),
+      max.overlaps = Inf, size = 3,
+      box.padding = 0.5, point.padding = 0.3,
+      segment.color = "grey50"
+    ) +
+    scale_fill_manual(values = c("Gene of Interest" = "lightcoral",
+                                 "Other genes"      = "lightgrey")) +
+    scale_color_manual(values = c("Gene of Interest" = "black",
+                                  "Other genes"      = "darkgrey")) +
+    theme_classic() +
+    xlim(xlimits) +
+    geom_vline(xintercept = -lfc_thr, linetype = "dashed", color = "grey80") +
+    geom_vline(xintercept =  0,       linetype = "dashed", color = "grey80") +
+    geom_hline(yintercept = -log10(padj_thr), linetype = "dashed")
+
+  if (!is.null(ylimits)) p <- p + ylim(ylimits)
+  if (!is.null(title))   p <- p + ggtitle(title)
+  p
+}
+
+save_both <- function(p, prefix, width = 8, height = 6, dpi = 600) {
+  ggplot2::ggsave(filename = paste0(prefix, ".png"), plot = p,
+                  width = width, height = height, dpi = dpi)
+}
+
+contrast <- "miR187_90dph_ovary_from_target+cv1.1"
+
+y_max  <- max(Data$mlp[is.finite(Data$mlp)], na.rm = TRUE)
+y_max  <- max(y_max, -log10(padj_thresh) + 1)
+y_zoom <- c(-0.1, 20)
+
+p_up <- make_volcano(
+  Data,
+  title   = paste0("Volcano (", contrast, ") - Zoom up"),
+  xlimits = c(-0.02, 1),
+  ylimits = y_zoom
+)
+save_both(p_up, file.path(out_dir, paste0("volcano_", contrast, "_zoom_up")))
+```
