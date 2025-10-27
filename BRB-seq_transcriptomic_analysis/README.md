@@ -11,7 +11,7 @@ To identify and characterize genes potentially regulated by miR-187-3p that may 
 
 ---
 
-# OUpstream data processing prior to the BRB-seq transcriptomic analysis
+# Upstream data processing prior to the BRB-seq transcriptomic analysis
 Raw read alignment and gene quantification were carried out using the [Nextflow RNAseq pipeline](https://forgemia.inra.fr/lpgp/rnaseq), developed and maintained by the INRAE LPGP bioinformatics team.  
 
 This automated workflow includes:  
