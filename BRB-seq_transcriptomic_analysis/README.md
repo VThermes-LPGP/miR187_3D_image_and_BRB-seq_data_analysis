@@ -17,7 +17,6 @@ Raw read alignment and gene quantification were carried out using the [Nextflow 
 This automated workflow includes:  
 Transcriptome alignment and quantification with *Alevin-fry* ([PMID: 37034702](https://pubmed.ncbi.nlm.nih.gov/37034702/)) via its simpleaf wrapper,  
 Genome alignment and exon-level quantification with *STARsolo* ([PMID: 23104886](https://pubmed.ncbi.nlm.nih.gov/23104886/)).  
-Execution was performed on an HPC cluster using SLURM job scheduling, following the pipeline configuration.  
 
 The resulting gene-level count matrices (STAR_SOLO_counts.xls) were used as input data for the analyses described in this notebook.
 
