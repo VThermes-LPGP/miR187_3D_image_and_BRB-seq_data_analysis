@@ -37,8 +37,8 @@ All input and output files are organized in the data/ directory to ensure full r
 To reproduce the analyses:
 
 1- Download or prepare the input data and place them in data/input/  
-2- Open the notebook (e.g., analysis.ipynb or analysis.Rmd)
-3- Run all code chunks sequentially from top to bottom
+2- Open the notebook (e.g., analysis.ipynb or analysis.Rmd)  
+3- Run all code chunks sequentially from top to bottom  
 4- All generated results will automatically appear in data/output/
 
 
