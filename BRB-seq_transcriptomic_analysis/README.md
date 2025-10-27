@@ -1,4 +1,4 @@
-# Objectives of the BRB-seq transcriptomic analysis pipeline
+# Overview and purpose of the BRB-seq transcriptomic analysis pipeline
 This notebook reproduces the main steps of the BRB-seq transcriptomic analysis used in the article entitled <ins> Unveiling the role of mir-187 in adult ovarian follicle growth and female fecundity in medaka (Oryzias latipes). </ins>
 
 It focuses on two key objectives:
@@ -11,7 +11,7 @@ To identify and characterize genes potentially regulated by miR-187-3p that may 
 
 ---
 
-# Overview of data processing to be done upstream of the BRB-seq transcriptomic analysis pipeline.
+# OUpstream data processing prior to the BRB-seq transcriptomic analysis
 Raw read alignment and gene quantification were carried out using the [Nextflow RNAseq pipeline](https://forgemia.inra.fr/lpgp/rnaseq), developed and maintained by the INRAE LPGP bioinformatics team.  
 
 This automated workflow includes:  
@@ -33,7 +33,6 @@ All input and output files are organized in the data/ directory to ensure full r
 > *(e.g., tables and plots)*
 
 **Reproducibility**
-
 To reproduce the analyses:
 
 1- Download or prepare the input data and place them in data/input/  
@@ -41,6 +40,12 @@ To reproduce the analyses:
 3- Run all code chunks sequentially from top to bottom  
 4- All generated results will automatically appear in data/output/
 
+---
+# Repository content
+This repository contains:  
 
+- The main analysis notebook (`analysis_BRBseq.Rmd`), which reproduces the transcriptomic analyses described in the manuscript.  
+- files need to input in `data/input/`.  
+- All generated outputs (tables, plots) stored in `data/output/`.  
 
 
