@@ -209,6 +209,7 @@ __marimo__/
 # --- R / RStudio ---
 .Rhistory
 .RData
+.RDataTmp
 .Rproj.user/
 *.Rproj
 
