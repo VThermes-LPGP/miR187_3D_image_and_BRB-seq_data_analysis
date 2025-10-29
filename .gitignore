@@ -244,6 +244,10 @@ results/
 *.bz2
 *.7z
 
+BRB-seq_transcriptomic_analysis/data/input/orthologs.txt
+!BRB-seq_transcriptomic_analysis/data/input/*.zip
+!BRB-seq_transcriptomic_analysis/data/input/*.gz
+
 # --- OS divers ---
 .DS_Store
 Thumbs.db
