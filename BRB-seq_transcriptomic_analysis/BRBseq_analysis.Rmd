@@ -600,7 +600,7 @@ if (!file.exists(output_file)) {
 }
 
 # ---- 2- Cleans the TargetScan context score file -----------------------------
-context_file <- "data/input/miRNA187_contextscore_output_camille.txt"
+context_file <- "data/input/miRNA187_contextscore_output.txt"
 context <- fread(context_file, select = c("a_Gene_ID", "Site_type"))
 context[, transcript_id := sub("transcript:", "", a_Gene_ID)]
 
