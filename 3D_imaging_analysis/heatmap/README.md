@@ -20,13 +20,13 @@ This workflow allows researchers to quickly analyze and visualize follicle size 
 ## Repository structure
 3D_imaging_analysis/
 └── heatmap/
-    ├── heatmap_miR187.R
-    ├── data/
-    │   ├── WT104.xlsx
-    │   ├── MUT104.xlsx
-    │   ├── WT211.xlsx
-    │   └── MUT211.xlsx
-    └── README.md
+├── heatmap_miR187.R
+├── data/
+│ ├── WT104.xlsx
+│ ├── MUT104.xlsx
+│ ├── WT211.xlsx
+│ └── MUT211.xlsx
+└── README.md
 
 
 **Explanation:**  
