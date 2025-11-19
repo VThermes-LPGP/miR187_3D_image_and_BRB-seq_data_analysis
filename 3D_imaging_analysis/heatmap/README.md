@@ -27,14 +27,9 @@ heatmap/
 │  └─ 211dpf/
 │     ├─ A/         # WT Excel files for 211 dpf
 │     └─ B/         # MUT Excel files for 211 dpf
-├─ output/
-│  ├─ 104dpf/       # Heatmaps for 104 dpf
-│  └─ 211dpf/       # Heatmaps for 211 dpf
 ├─ heatmap_miR187.R
 ├─ README.md
 ```
-
-
 
 **Explanation:**  
 - `input/<age>dpf/A/` – contains Excel files for WT ovaries at the given age.
