@@ -10,7 +10,7 @@ It performs the following steps:
 - Computes density distributions for each sample and group (WT vs MUT).
 - Generates combined density plots with average curves for WT and MUT
 
-This workflow allows researchers to analyse and visualize follicle size distributions across WT and MUT medaka ovaries at two developmental stages: 104 dpf (juveniles) and 211 dpf (adults).
+This workflow allows researchers to analyze and visualize follicle size distributions across WT and MUT medaka ovaries at two developmental stages: 104 dpf (juveniles) and 211 dpf (adults).
 The script automatically detects experiments in separate subfolders and organizes outputs in dedicated folders.
 
 ---
@@ -34,7 +34,7 @@ density/
 ```
 
 **Explanation:**  
-- `input/<age>dpf/` – contains Excel files for each experiment/age. Files must include "WT"" or "MUT"" in their names for automatic grouping.
+- `input/<age>dpf/` – contains Excel files for each experiment/age. Files must include "WT" or "MUT" in their names for automatic grouping.
 - `density_miR187.R` – the main R script.
 - `README.md` – this file, providing instructions and context.
 
@@ -73,4 +73,21 @@ Install missing packages using `install.packages()`.
 
 3. **Results:**
    - Density plots are saved in the corresponding `output/<age>dpf/` folder as `Combined_Density_WT_MUT_20-250.png` and as `Combined_Density_WT_MUT_20-250.pdf`.
+
+## Parameters
+Users can modify the following parameters at the top of the script:
+
+```
+size_min <- 20        # Minimum follicle diameter (µm)
+size_max <- 250       # Maximum follicle diameter (µm)
+input_root  <- "input/"
+output_root <- "output/"
+color_palette <- c("WT" = "#2080F1", "MUT" = "mediumseagreen")
+```
+
+## Notes
+  - Excel files must contain numeric follicle diameters. Zeros or NA values are ignored.
+  - File names must contain "WT" or "MUT" to be correctly grouped.
+  - If no Excel files are found in a subfolder, the script will skip it and display a warning.
+
 
