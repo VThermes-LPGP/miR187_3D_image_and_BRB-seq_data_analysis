@@ -18,6 +18,7 @@ The script automatically processes both ages and organizes outputs in separate f
 ---
 
 ## Repository structure
+```
 heatmap/
 ├─ input/
 │  ├─ 104dpf/
@@ -31,7 +32,7 @@ heatmap/
 │  └─ 211dpf/       # Heatmaps for 211 dpf
 ├─ heatmap_miR187.R
 ├─ README.md
-
+```
 
 
 
