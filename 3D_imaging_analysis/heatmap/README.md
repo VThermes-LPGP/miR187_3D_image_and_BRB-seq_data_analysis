@@ -12,8 +12,9 @@ It performs the following steps:
   - Mann-Whitney test for independent WT vs MUT comparison
 - Generates annotated heatmap showing Z-scores and p-values to visualize differences between groups.
 
-This workflow allows researchers to analyze and visualize follicle size distributions across WT and MUT medaka ovaries at two developmental stages: 104 dpf (juveniles) and 211 dpf (adults). 
+This workflow allos researchers to analyse and visualize follicle size distributions across WT and MUT medaka ovaries at two developmental stages: 104 dpf (juveniles) and 211 dpf (adults).
 The script automatically processes both ages and organizes outputs in separate folders.
+
 ---
 
 ## Repository structure
