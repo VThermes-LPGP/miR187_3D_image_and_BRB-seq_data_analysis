@@ -18,25 +18,21 @@ This workflow allows researchers to quickly analyze and visualize follicle size 
 ---
 
 ## Repository structure
-3D_imaging_analysis/
-└── heatmap/
-├── heatmap_miR187.R
-├── data/
-│ ├── WT104.xlsx
-│ ├── MUT104.xlsx
-│ ├── WT211.xlsx
-│ └── MUT211.xlsx
-└── README.md
+heatmap/
+├─ input/
+│ ├─ WT104.xlsx
+│ └─ MUT104.xlsx
+│ └─ WT211.xslx
+│ └─ MUT211.xslx
+├─ heatmap_miR187.R
+├─ README.md
+
 
 
 **Explanation:**  
-- `data/` – contains Excel files for analysis.
+- `input/` – contains Excel files for analysis.
 - `heatmap_miR187.R` – the main R script to generate boxplots and heatmaps.
 - `README.md` – this file, providing instructions and context.
-
----
-
-> **Note:** Input and output folders are **not included** in the repository. Users need to create them locally as explained below.
 
 ---
 
@@ -54,7 +50,7 @@ The script requires the following R packages:
 - `ComplexHeatmap`
 - `circlize`
 
-Install missing packages using `install.packages()` or `BiocManager::install()` for Bioconductor packages.
+Install missing packages using `install.packages()`.
 
 ---
 
