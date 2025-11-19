@@ -2,384 +2,292 @@
 
 # Single script for processing 3D imaging data of WT and MUT ovaries
 # Author: Marlène Davilma
-# Description: This script reads Excel files containing follicle diameter data of ovaries imaged in 3D,
-# calculates the distribution of follicles by size classes, performs statistical tests
-# (Shapiro + Mann-Whitney) and generates boxplots and heatmaps.
+# Description: This script reads Excel files containing follicle diameter data from 3D-imaged ovaries,
+# calculates the distribution of follicles by size classes, performs Shapiro + Mann-Whitney tests,
+# and generates the final heatmap figures.
 
 #-----------------------
 # Required libraries
 #-----------------------
 library(readxl)
-library(ggplot2)
-library(cowplot)
-library(reshape2)
 library(data.table)
 library(dplyr)
 library(tidyr)
-library(gridExtra)
 library(ComplexHeatmap)
 library(circlize)
 
 #-----------------------
 # Define working directory
 #-----------------------
-# Set working directory to the folder containing this R script (useful for GitHub)
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 #-----------------------
-# Define age or dataset type
+# Loop over ages
 #-----------------------
-# 104 -> juveniles (before reproduction starts)
-# 211 -> adults (during reproduction period)
-age_dpf <- 104   # <- change to 211 if needed
-
-#-----------------------
-# Define size classes and stage names according to age
-#-----------------------
-if(age_dpf == 104) {
-  size_class <- c(20, 60, 90, 120, 150, 250, 400, 500, 800)
-  stade_name <- c("I","II","III","IV","V","VI","VII","VIII")
-} else if(age_dpf == 211) {
-  size_class <- c(20, 60, 90, 120, 150, 250, 400, 500, 800, 1200)
-  stade_name <- c("I","II","III","IV","V","VI","VII","VIII","IX")
-} else {
-  stop("⚠️ age_dpf not recognized. Use 104 or 211.")
-}
-
-#-----------------------
-# Group names
-#-----------------------
-name_group <- c("WT", "MUT")
-
-
-#-----------------------
-# Table_Maker module
-#-----------------------
-# Reads input Excel files, calculates the distribution of follicles by size classes,
-# and writes a final CSV grouped by category.
-Table_Maker <- function(
-    size_class = c(20, 60, 90, 120, 150, 250, 400, 500, 800),
-    name = c("Nom1", "Nom2", "Nom3", "Nom4", "Nom5", "Nom6", "Nom7", "Nom8", "Nom9")
-) {
+for(age_dpf in c(104, 211)) {
   
-  list_file <- c("A", "B")
-  DF_list <- list()
+  #-----------------------
+  # Define size classes and stage names according to age
+  #-----------------------
+  if(age_dpf == 104) {
+    size_class <- c(20, 60, 90, 120, 150, 250, 400, 500, 800)
+    stage_name <- c("I","II","III","IV","V","VI","VII","VIII")
+  } else if(age_dpf == 211) {
+    size_class <- c(20, 60, 90, 120, 150, 250, 400, 500, 800, 1200)
+    stage_name <- c("I","II","III","IV","V","VI","VII","VIII","IX")
+  } else {
+    stop("⚠️ age_dpf not recognized. Use 104 or 211.")
+  }
   
-  for(i in list_file) {
-    path <- paste0("input/", i)
-    file <- list.files(path, pattern = "\\.xlsx$", full.names = TRUE)
-    if(length(file) > 0) {
-      df <- read_excel(file)
-      DF_list <- append(DF_list, list(df))
+  group_names <- c("WT", "MUT")
+  
+  #-----------------------
+  # Define input/output directories dynamically
+  #-----------------------
+  input_dir <- paste0("input/", age_dpf, "dpf/")
+  output_dir <- paste0("output/", age_dpf, "dpf/")
+  if(!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+  
+  #-----------------------
+  # Table_Maker module
+  #-----------------------
+  Table_Maker <- function(size_class, names) {
+    file_list <- c("A", "B")
+    df_list <- list()
+    
+    for(i in file_list) {
+      path <- paste0(input_dir, i)
+      files <- list.files(path, pattern = "\\.xlsx$", full.names = TRUE)
+      if(length(files) > 0) {
+        df <- read_excel(files)
+        df_list <- append(df_list, list(df))
+      }
     }
-  }
-  
-  DF_table_list <- list()
-  
-  for (n in 1:length(DF_list)) {
-    Data <- DF_list[[n]]
-    Data <- Data[-1, ]
     
-    Data <- data.table(Data)
-    Data <- data.table::melt.data.table(Data, measure.vars = 1:ncol(Data))
-    Data <- na.omit(Data)
+    df_table_list <- list()
     
-    labels <- paste0(size_class[-length(size_class)], "-", size_class[-1])
-    Class <- Data
-    Class[, class := cut(value, breaks = size_class, labels = labels, include.lowest = TRUE)]
-    Class <- na.omit(Class)
-    
-    Class_counts <- Class[, .N, by = .(variable, class)]
-    Class_sums <- Class_counts[, .(total = sum(N)), by = variable]
-    Class <- merge(Class_counts, Class_sums, by = "variable")
-    Class[, percentage := round(N / total * 100, 2)]
-    Class <- Class[, .(variable, class, percentage)]
-    
-    sorted_data <- dcast(
-      data = Class,
-      variable ~ class,
-      value.var = "percentage",
-      fill = 0,
-      drop = FALSE
-    )
-    
-    pop <- data.frame(category = rep(list_file[n], nrow(sorted_data)))
-    sorted_data <- cbind(pop, sorted_data)
-    DF_table_list[[n]] <- sorted_data
-  }
-  
-  Final_data <- do.call(rbind, DF_table_list)
-  
-  if(is.vector("name")) {
-    for(i in 1:length(name)) {
-      Final_data$category <- gsub(unique(Final_data$category)[i], name[i], Final_data$category)
-    }
-  }
-  
-  write.csv2(Final_data, paste0("input/data_by_group.csv"))
-}
-
-# Execute Table_Maker module
-Table_Maker(size_class, name_group)
-
-#-----------------------
-# Test_KW module
-#-----------------------
-# Reads the CSV files generated by Table_Maker, performs statistical tests, and generates visualizations.
-# 1. Shapiro normality test by group
-# 2. Mann-Whitney test to compare the two independent groups (WT vs MUT)
-#    Note: R's wilcox.test() performs this test on ranks, equivalent
-#    to the Wilcoxon-Mann-Whitney test for two independent samples.
-# 3. Creation of annotated boxplots
-# 4. Creation of a p-value heatmap
-Test_KW <- function() {
-  chemin <- "input/"
-  fichiers_csv <- list.files(chemin, pattern = ".csv")
-  
-  for (fichier in fichiers_csv) {
-    nom_dataframe <- gsub(".csv", "", fichier)
-    data_i <- read.csv2(file.path(chemin, fichier))
-    data_i <- data_i[, -1]
-    mydata <- data_i
-    
-    ncol <- names(mydata)
-    ncol <- gsub("X", "", gsub("\\.", "-", ncol))
-    ncol[length(ncol)] <- gsub("-", ">", ncol[length(ncol)])
-    
-    Size_class <- c()
-    Test_pval <- c()
-    Signif_label <- c()
-    Shapiro_pval_group1 <- c()
-    Shapiro_pval_group2 <- c()
-    list_gp <- list()
-    
-    for (k in 3:length(ncol)) {
-      data <- data.frame(
-        category = mydata$category,
-        number = as.double(mydata[, k])
+    for (n in 1:length(df_list)) {
+      data <- df_list[[n]]
+      data <- data[-1, ]
+      data <- data.table(data)
+      data <- data.table::melt.data.table(data, measure.vars = 1:ncol(data))
+      data <- na.omit(data)
+      
+      labels <- paste0(size_class[-length(size_class)], "-", size_class[-1])
+      class_data <- data
+      class_data[, class := cut(value, breaks = size_class, labels = labels, include.lowest = TRUE)]
+      class_data <- na.omit(class_data)
+      
+      class_counts <- class_data[, .N, by = .(variable, class)]
+      class_sums <- class_counts[, .(total = sum(N)), by = variable]
+      class_data <- merge(class_counts, class_sums, by = "variable")
+      class_data[, percentage := round(N / total * 100, 2)]
+      class_data <- class_data[, .(variable, class, percentage)]
+      
+      sorted_data <- dcast(
+        data = class_data,
+        variable ~ class,
+        value.var = "percentage",
+        fill = 0,
+        drop = FALSE
       )
       
-      if (length(na.omit(unique(data$category))) < 2 || all(is.na(data$number))) {
+      group <- data.frame(category = rep(file_list[n], nrow(sorted_data)))
+      sorted_data <- cbind(group, sorted_data)
+      df_table_list[[n]] <- sorted_data
+    }
+    
+    final_data <- do.call(rbind, df_table_list)
+    
+    if(is.vector("names")) {
+      for(i in 1:length(names)) {
+        final_data$category <- gsub(unique(final_data$category)[i], names[i], final_data$category)
+      }
+    }
+    
+    write.csv2(final_data, paste0(input_dir, "data_by_group.csv"))
+  }
+  
+  Table_Maker(size_class, group_names)
+  
+  #-----------------------
+  # Test_KW module
+  #-----------------------
+  Test_KW <- function() {
+    csv_files <- list.files(input_dir, pattern = ".csv")
+    kw_results_list <- list()
+    
+    for (file in csv_files) {
+      file_base <- gsub(".csv", "", file)
+      
+      data_i <- read.csv2(file.path(input_dir, file))
+      data_i <- data_i[, -1]
+      mydata <- data_i
+      
+      ncol_names <- names(mydata)
+      ncol_names <- gsub("X", "", gsub("\\.", "-", ncol_names))
+      ncol_names[length(ncol_names)] <- gsub("-", ">", ncol_names[length(ncol_names)])
+      
+      size_class_vec <- c()
+      test_pval <- c()
+      signif_label <- c()
+      shapiro_pval_group1 <- c()
+      shapiro_pval_group2 <- c()
+      
+      for (k in 3:length(ncol_names)) {
+        data_tmp <- data.frame(
+          category = mydata$category,
+          number = as.double(mydata[, k])
+        )
+        
+        if (length(na.omit(unique(data_tmp$category))) < 2 || all(is.na(data_tmp$number))) {
+          next
+        }
+        
+        groups <- unique(data_tmp$category)
+        pvals_shapiro <- sapply(groups, function(g) {
+          vals <- data_tmp$number[data_tmp$category == g]
+          if(length(vals) >= 3) {
+            if(length(unique(vals)) > 1) {
+              return(shapiro.test(vals)$p.value)
+            } else { return(NA) }
+          } else { return(NA) }
+        })
+        
+        shapiro_pval_group1 <- c(shapiro_pval_group1, pvals_shapiro[1])
+        shapiro_pval_group2 <- c(shapiro_pval_group2, pvals_shapiro[2])
+        
+        test <- wilcox.test(number ~ category, data = data_tmp, exact = FALSE)
+        pval <- test$p.value
+        sig <- ifelse(pval < 0.001, "***",
+                      ifelse(pval < 0.01, "**",
+                             ifelse(pval < 0.05, "*", "ns")))
+        
+        a <- gsub("\\.", "-", colnames(mydata)[k])
+        size_class_vec <- c(size_class_vec, a)
+        test_pval <- c(test_pval, pval)
+        signif_label <- c(signif_label, sig)
+      }
+      
+      if (length(size_class_vec) == 0) {
+        message(paste("⚠️ No test performed for file:", file))
         next
       }
       
-      groups <- unique(data$category)
-      pvals_shapiro <- sapply(groups, function(g) {
-        vals <- data$number[data$category == g]
-        if(length(vals) >= 3) {
-          if(length(unique(vals)) > 1) {
-            return(shapiro.test(vals)$p.value)
-          } else {
-            return(NA)
-          }
-        } else {
-          return(NA)
-        }
-      })
+      kw_results <- data.frame(
+        "size_class" = size_class_vec,
+        "p_value" = test_pval,
+        "significance" = signif_label,
+        "Shapiro_pval_group1" = shapiro_pval_group1,
+        "Shapiro_pval_group2" = shapiro_pval_group2
+      )
       
-      Shapiro_pval_group1 <- c(Shapiro_pval_group1, pvals_shapiro[1])
-      Shapiro_pval_group2 <- c(Shapiro_pval_group2, pvals_shapiro[2])
-      
-      test <- wilcox.test(number ~ category, data = data, exact = FALSE)
-      pval <- test$p.value
-      sig <- ifelse(pval < 0.001, "***",
-                    ifelse(pval < 0.01, "**",
-                           ifelse(pval < 0.05, "*", "ns")))
-      
-      a <- gsub("\\.", "-", colnames(mydata)[k])
-      Size_class <- c(Size_class, a)
-      Test_pval <- c(Test_pval, pval)
-      Signif_label <- c(Signif_label, sig)
-      
-      gp <- ggplot(data, aes(x = category, y = number, fill = category)) +
-        geom_boxplot(width = 0.7) +
-        theme_classic() +
-        scale_fill_brewer(palette = "Dark2") +
-        ggtitle(paste0("Size class: ", a)) +
-        theme(
-          plot.title = element_text(size = 8, face = "bold"),
-          axis.title.x = element_blank(),
-          axis.title.y = element_text(size = 7),
-          legend.position = "none"
-        ) +
-        annotate("text", x = 1.5, y = max(data$number, na.rm = TRUE) * 1.1,
-                 label = sig, size = 5, fontface = "bold") +
-        annotate("text", x = 1.5, y = max(data$number, na.rm = TRUE) * 1.2,
-                 label = paste0("p = ", signif(pval, 3)), size = 3)
-      
-      list_gp[[length(list_gp) + 1]] <- gp
+      kw_results_list[[file_base]] <- kw_results
     }
-    
-    if (length(Size_class) == 0) {
-      message(paste("⚠️ Aucun test effectué pour le fichier :", fichier))
-      next
-    }
-    
-    Result <- data.frame(
-      "size class" = Size_class,
-      "p-value" = Test_pval,
-      "significance" = Signif_label,
-      "Shapiro_pval_group1" = Shapiro_pval_group1,
-      "Shapiro_pval_group2" = Shapiro_pval_group2
-    )
-    
-    write.csv2(Result, paste0("output/Test_KW", nom_dataframe, ".csv"), row.names = FALSE)
-    
-    n <- length(list_gp)
-    i <- 5
-    while (n %% i != 0 && i > 1) { i <- i - 1 }
-    
-    p3 <- grid.arrange(grobs = list_gp, ncol = i)
-    ggsave(paste0("output/boxplot_", nom_dataframe, ".png"),
-           plot = p3, width = 37, height = 14, units = "cm", dpi = 300)
-    
-    Result$size.class <- factor(Result$size.class, levels = Result$size.class)
-    
-    ggplot(Result, aes(x = size.class, y = "")) +
-      geom_tile(aes(fill = `p.value`), color = "white") +
-      geom_text(aes(label = significance), size = 5) +
-      scale_fill_gradient(low = "red", high = "white", name = "p-value") +
-      theme_minimal() +
-      theme(axis.text.y = element_blank(),
-            axis.ticks.y = element_blank()) +
-      labs(title = paste0("Heatmap des p-values : ", nom_dataframe),
-           x = "Classe de taille", y = "") -> pheat
-    
-    ggsave(paste0("output/heatmap_pval_", nom_dataframe, ".png"),
-           plot = pheat, width = 20, height = 6, units = "cm", dpi = 300)
+    return(kw_results_list[[1]])
   }
   
-  return(nom_dataframe)
-}
-
-nom_dataframe <- Test_KW()
-
-#-----------------------
-# Final Heatmap module with ComplexHeatmap
-#-----------------------
-# Reads CSV to create matrix, standardizes values (Z-score) and adds annotation.
-# Generates a color heatmap with p-values to visualize statistical differences between groups.
-
-chemin <- "input/"
-fichier <- list.files(chemin, pattern = ".csv")
-liste_dataframes <- list()
-N <- c()
-
-nom_dataframe <- gsub(".csv", "", fichier) 
-assign(nom_dataframe, read.csv2(file.path(chemin, fichier)))
-liste_dataframes[[nom_dataframe]] <- get(nom_dataframe)
-
-data_i <- get(nom_dataframe)
-data_i <- data_i[, -1]
-mydata <- data_i
-Data <- data_i
-
-sample_name <- Data$variable
-Data <- Data[, -2]
-
-Data$category <- factor(Data$category, levels = unique(Data$category))
-
-ncol <- names(Data)
-ncol <- gsub("X", "", gsub("\\.", "-", ncol))
-colnames(Data) <- ncol
-
-lab <- ncol[-1]
-
-Data <- rev(Data)
-Data <- Data %>% dplyr::select(category, 1:length(Data))
-
-Pval <- read.csv2(paste0("output/Test_KW", nom_dataframe, ".csv"))
-
-#-----------------------
-# Transpose and standardize
-#-----------------------
-mat <- (Data[, -1])                  
-colnames(mat) <- rev(lab)             
-rownames(mat) <- sample_name          
-
-mat <- t(Data[, -1])
-row_split <- Data$category
-
-# Scale: center and normalize by sample
-mat <- t(scale(t(mat)))
-
-mat <- mat[rev(seq_len(nrow(mat))), ]
-col_titles <- rownames(mat)
-
-#-----------------------
-# Define stage classes
-#-----------------------
-stade = c(20, 60, 90, 120, 150, 250, 400, 500, 800)
-stade_name = c("I", "II", "III", "IV", "V", "VI", "VII", "VIII")
-
-bounds_low <- sapply(strsplit(rownames(mat), "-"), function(x) as.numeric(x[1]))
-ind <- sapply(stade, function(seuil) {
-  indices <- which(bounds_low < seuil)
-  if(length(indices) == 0) NA else max(indices)
-})[-1]
-
-column_subcategories <- rep(NA, nrow(mat))
-column_subcategories[1:ind[1]] <- stade_name[1]
-for(k in 2:length(ind)) {
-  column_subcategories[(ind[k-1]+1):ind[k]] <- stade_name[k]
-}
-column_subcategories <- factor(column_subcategories, levels = stade_name)
-
-#-----------------------
-# Create heatmap
-#-----------------------
-Hmap <- ComplexHeatmap::Heatmap(
-  t(mat),
-  row_split = row_split,
-  row_names_side = "left",
-  row_gap = unit(2, "mm"),
-  column_names_side = "bottom",
-  column_names_rot = 45,
-  cluster_columns = FALSE,
-  cluster_rows = FALSE,
-  column_split = column_subcategories,
-  name = "Z-score",
-  col = circlize::colorRamp2(c(-4, -1, 0, 1, 4),
-                             c("#006A9F", "#004F78", "#031E2E", "orange", "yellow")),
-  bottom_annotation = HeatmapAnnotation(
-    P_value = -log10(Pval$p.value),
-    show_legend = TRUE,
-    annotation_legend_param = list(
-      title = bquote("-"*~Log[10]*"(P_value)"),
+  kw_results <- Test_KW()
+  
+  #-----------------------
+  # Final Heatmap module
+  #-----------------------
+  csv_file <- list.files(input_dir, pattern = ".csv")
+  data_name <- gsub(".csv", "", csv_file) 
+  assign(data_name, read.csv2(file.path(input_dir, csv_file)))
+  data_i <- get(data_name)
+  data_i <- data_i[, -1]
+  data <- data_i
+  
+  sample_names <- data$variable
+  data <- data[, -2]
+  
+  data$category <- factor(data$category, levels = unique(data$category))
+  
+  ncol_names <- names(data)
+  ncol_names <- gsub("X", "", gsub("\\.", "-", ncol_names))
+  colnames(data) <- ncol_names
+  
+  lab <- ncol_names[-1]
+  
+  data <- rev(data)
+  data <- data %>% dplyr::select(category, 1:length(data))
+  
+  pval_df <- kw_results
+  
+  # Transpose and standardize
+  mat <- t(data[, -1])
+  row_split <- data$category
+  mat <- t(scale(t(mat)))
+  mat <- mat[rev(seq_len(nrow(mat))), ]
+  
+  # Define stage classes
+  bounds_low <- sapply(strsplit(rownames(mat), "-"), function(x) as.numeric(x[1]))
+  ind <- sapply(size_class[-1], function(threshold) {
+    indices <- which(bounds_low < threshold)
+    if(length(indices) == 0) NA else max(indices)
+  })
+  column_subcategories <- rep(NA, nrow(mat))
+  column_subcategories[1:ind[1]] <- stage_name[1]
+  if(length(ind) > 1){
+    for(k in 2:length(ind)){
+      column_subcategories[(ind[k-1]+1):ind[k]] <- stage_name[k]
+    }
+  }
+  column_subcategories <- factor(column_subcategories, levels = stage_name)
+  
+  # Create heatmap
+  heatmap_plot <- ComplexHeatmap::Heatmap(
+    t(mat),
+    row_split = row_split,
+    row_names_side = "left",
+    row_gap = unit(2, "mm"),
+    column_names_side = "bottom",
+    column_names_rot = 45,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    column_split = column_subcategories,
+    name = "Z-score",
+    col = circlize::colorRamp2(c(-4, -1, 0, 1, 4),
+                               c("#006A9F", "#004F78", "#031E2E", "orange", "yellow")),
+    bottom_annotation = HeatmapAnnotation(
+      P_value = -log10(pval_df$p_value),
+      show_legend = TRUE,
+      annotation_legend_param = list(
+        title = bquote("-"*~Log[10]*"(P_value)"),
+        legend_direction = "horizontal",
+        heatmap_legend_side = "bottom",
+        legend_width = unit(2, "cm")
+      ),
+      col = list(
+        P_value = circlize::colorRamp2(
+          c(0, 1.1, 1.3, 1.30103, 2, 4),
+          c("snow4", "grey80", "grey90", "lightgreen", "#41ab5d", "darkgreen")
+        )
+      )
+    ),
+    row_names_gp = grid::gpar(fontsize = 12),
+    column_names_gp = grid::gpar(fontsize = 12),
+    column_gap = unit(0.5, "mm"),
+    heatmap_legend_param = list(
+      at = c(-4, -2, 0, 2, 4),
+      labels = c("-4", "-2", "0", "2", "4"),
+      annotation_legend_side = "bottom",
+      legend_grouping = "original",
       legend_direction = "horizontal",
       heatmap_legend_side = "bottom",
-      legend_width = unit(2, "cm")
-    ),
-    col = list(
-      P_value = circlize::colorRamp2(
-        c(0, 1.1, 1.3, 1.30103, 2, 4),
-        c("snow4", "grey80", "grey90", "lightgreen", "#41ab5d", "darkgreen")
-      )
+      inner_margin = unit(1, "mm"),
+      legend_width = unit(3, "cm")
     )
-  ),
-  row_names_gp = grid::gpar(fontsize = 12),
-  column_names_gp = grid::gpar(fontsize = 12),
-  column_gap = unit(0.5, "mm"),
-  heatmap_legend_param = list(
-    at = c(-4, -2, 0, 2, 4),
-    labels = c("-4", "-2", "0", "2", "4"),
-    annotation_legend_side = "bottom",
-    legend_grouping = "original",
-    legend_direction = "horizontal",
-    heatmap_legend_side = "bottom",
-    inner_margin = unit(1, "mm"),
-    legend_width = unit(3, "cm")
   )
-)
-
-draw(Hmap)
-
-png(
-  paste0("./output/pearson_heatmap", nom_dataframe, ".png"),
-  width = 10, height = 10, units = "in",
-  res = 1200, pointsize = 4, bg = "transparent"
-)
-draw(Hmap, background = "transparent",
-     heatmap_legend_side = "bottom",
-     annotation_legend_side = "bottom")
-dev.off()
+  
+  png(
+    paste0(output_dir, "pearson_heatmap_", data_name, ".png"),
+    width = 10, height = 10, units = "in",
+    res = 1200, pointsize = 4, bg = "transparent"
+  )
+  draw(heatmap_plot, background = "transparent",
+       heatmap_legend_side = "bottom",
+       annotation_legend_side = "bottom")
+  dev.off()
+}
