@@ -15,13 +15,14 @@ It provides the computational workflows for:
 miR187-medaka-fertility/
 │
 ├─ 3D_imaging_analysis/
-│ ├─ README.md 
-│ └─ img_viz3D.R
+│ ├─ heatmap/
+│ ├─ density/
+│ └─ README.md 
 │
 ├─  BRB-seq_transcriptomic_analysis/
-│ ├─ README.md
-│ └─ data/        # input files
-│ └─ BRBseq_analysis.Rmd       # Transcriptomic pipeline
+│ ├─ data/                      # input files
+│ ├─ BRBseq_analysis.Rmd        # Transcriptomic pipeline 
+│ └─ README.md
 │
 ├─ README.md
 ├─ .gitignore
