@@ -4,7 +4,7 @@ This notebook reproduces the main steps of the BRB-seq transcriptomic analysis u
 It focuses on two key objectives:
 
 **- Differential Gene Expression and KEGG Pathway Analysis**
-To compare transcriptomic profiles between miR-187⁻/⁻ mutants and wild-type (WT) medaka ovaries, and to explore the biological pathways affected by miR-187 deletion.
+To compare transcriptomic profiles between miR-187 mutant (MUT) and wild-type (WT) medaka ovaries, and to explore the biological pathways affected by miR-187 deletion.
 
 **- Identification of Potential miR-187-3p Targets** 
 To identify and characterize genes potentially regulated by miR-187-3p that may contribute to ovarian function.
