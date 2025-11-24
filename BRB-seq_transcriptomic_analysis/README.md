@@ -29,7 +29,7 @@ Contains the source files required to run the analyses
 
 **Output directory**: `data/output/`  
 > **This directory is intentionally empty.**  
-> Outputs are not included in this repository because all figures and tables appear in the associated publication. Users running the pipeline will generate their own outputs locally.
+Outputs are not included in this repository because all figures and tables appear in the associated publication. Users running the pipeline will generate their own outputs locally.
 
 ---
 ## Reproducibility
