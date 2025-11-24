@@ -38,7 +38,8 @@ Outputs are not included in this repository because all figures and tables appea
 ## Reproducibility
 To reproduce the analyses:
 
-1- Ensure the input/ folder is in the same directory as the notebook. Download the input data placed in data/input/.  
+*Ensure the input/ and output/ folders are in the same directory as the notebook*
+1- Download the input data placed in data/input/.  
 2- Open the notebook BRBseq_analysis.Rmd  
 3- Run all code chunks sequentially from top to bottom  
 4- All generated results will automatically appear in data/output/
