@@ -251,3 +251,4 @@ BRB-seq_transcriptomic_analysis/data/input/orthologs.txt
 # --- OS divers ---
 .DS_Store
 Thumbs.db
+.Rprofile
