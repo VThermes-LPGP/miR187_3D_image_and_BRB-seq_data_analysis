@@ -10,7 +10,7 @@ To compare transcriptomic profiles between miR-187 mutant (MUT) and wild-type (W
 To identify and characterize genes potentially regulated by miR-187-3p that may contribute to ovarian function.
 
 ---
-# Upstream data processing prior to the BRB-seq transcriptomic analysis
+## Upstream data processing prior to the BRB-seq transcriptomic analysis
 Raw read alignment and gene quantification were carried out using the [Nextflow RNAseq pipeline](https://forgemia.inra.fr/lpgp/rnaseq), developed and maintained by the INRAE LPGP bioinformatics team.  
 
 This automated workflow includes:  
@@ -20,7 +20,7 @@ Genome alignment and exon-level quantification with *STARsolo* ([PMID: 23104886]
 The gene-level count matrices obtained (STAR_SOLO_counts.xls) were used as input data for the analyses described in this notebook.
 
 ---
-# File structure
+## File structure
 All input and output files are organized in the data/ directory to ensure full reproducibility of the analyses.  
 
 **Input directory**: `data/input/`  
@@ -34,7 +34,7 @@ Contains the source files required to run the analyses
 > Users running the analyses locally will generate their own outputs in this folder.
 
 ---
-# Reproducibility
+## Reproducibility
 To reproduce the analyses:
 
 1- Download or prepare the input data and place them in data/input/  
