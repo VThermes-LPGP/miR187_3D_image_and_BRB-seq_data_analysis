@@ -1,5 +1,5 @@
 ## Overview and purpose of the BRB-seq transcriptomic analysis pipeline
-This notebook reproduces the main steps of the BRB-seq transcriptomic analysis used in the article entitled <ins> Unveiling the role of mir-187 in adult ovarian follicle growth and female fecundity in medaka (Oryzias latipes). </ins>
+The notebook "BRBseq_analysis.Rmd" reproduces the main steps of the BRB-seq transcriptomic analysis used in the article entitled <ins> Unveiling the role of mir-187 in adult ovarian follicle growth and female fecundity in medaka (Oryzias latipes). </ins>
 
 It focuses on two key objectives:
 
@@ -29,9 +29,7 @@ Contains the source files required to run the analyses
 
 **Output directory**: `data/output/`  
 > **This directory is intentionally empty.**  
-> All figures and tables generated during the analyses are part of the scientific publication and are **not redistributed in this repository** to avoid duplication and ensure consistency with the final published article.  
->  
-> Users running the analyses locally will generate their own outputs in this folder.
+> Outputs are not included in this repository because all figures and tables appear in the associated publication. Users running the pipeline will generate their own outputs locally.
 
 ---
 ## Reproducibility
