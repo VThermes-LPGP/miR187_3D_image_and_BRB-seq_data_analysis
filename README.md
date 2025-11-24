@@ -36,7 +36,7 @@ miR187-medaka-fertility/
 
 Raw and processed data will be available upon publication:
 
-- **RNA-seq raw reads (BRB-seq)**: NCBI SRA / ENA — BioProject **PRJNAxxxxxx**
+- **RNA-seq raw reads (BRB-seq)**: NCBI SRA / ENA — BioProject **PRJNA1233206** 
 - **3D ovarian imaging**: BioImage Archive **BIA-xxxx**
 
 > Accessions will be updated when available.
@@ -67,8 +67,8 @@ cd miR187-medaka-fertility
 See `data/README.md` for dataset links and accession numbers.
 
 3-Run the analyses
-Imaging: run the R scripts in `scripts/python/` and in `scripts/R/`
-Transcriptomics: open and run the R Markdown notebook BRBseq_analysis.Rmd
+Imaging: run the R scripts in `heatmap/` and in `density/`
+Transcriptomics: open and run the R Markdown notebook in `BRB-seq_transcriptomic_analysis/`
 
 ## If you use this code, please cite:
 
