@@ -1,7 +1,6 @@
 # List of files used for the BRB seq transcriptomic data analysis pipeline :
 
-# Files in the input/ folder  
-
+## Files in the input/ folder  
 - STAR_SOLO_counts.xls  
 File obtain using the [Nextflow RNAseq pipeline](https://forgemia.inra.fr/lpgp/rnaseq).
 
