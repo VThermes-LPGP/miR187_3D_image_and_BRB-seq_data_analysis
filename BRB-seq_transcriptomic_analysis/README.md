@@ -44,3 +44,16 @@ To reproduce the analyses:
 2- Open the notebook BRBseq_analysis.Rmd  
 3- Run all code chunks sequentially from top to bottom  
 4- All generated results will automatically appear in data/output/
+
+---
+## Environment setup
+
+**R environment**
+Use renv to restore the exact R environment used in this project.
+renv ensures that everyone reproduces the same results by installing the same versions of the R packages.
+
+Run the following commands in R:
+```r
+install.packages("renv")  # installs renv if not already available
+renv::restore()           # installs all the package versions recorded in renv.lock
+```
