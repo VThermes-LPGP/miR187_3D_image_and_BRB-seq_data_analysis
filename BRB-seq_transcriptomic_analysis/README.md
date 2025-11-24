@@ -1,4 +1,4 @@
-# Overview and purpose of the BRB-seq transcriptomic analysis pipeline
+## Overview and purpose of the BRB-seq transcriptomic analysis pipeline
 This notebook reproduces the main steps of the BRB-seq transcriptomic analysis used in the article entitled <ins> Unveiling the role of mir-187 in adult ovarian follicle growth and female fecundity in medaka (Oryzias latipes). </ins>
 
 It focuses on two key objectives:
