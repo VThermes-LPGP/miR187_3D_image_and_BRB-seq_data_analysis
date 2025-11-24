@@ -27,8 +27,9 @@ All input and output files are organized in the data/ directory to ensure full r
 Contains the source files required to run the analyses  
 *(STAR_SOLO_counts.xls, orthologs.txt.gz, miR187_contextscore_output.txt)*
 
-**Output directory**: `data/output/`  
-> **This directory is intentionally empty.**  
+**Output directory**: `data/output/` 
+> **This directory is intentionally empty.**
+
 Outputs are not included in this repository because all figures and tables appear in the associated publication. Users running the pipeline will generate their own outputs locally.
 
 ---
