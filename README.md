@@ -1,11 +1,11 @@
-# miR-187-medaka-fertility
-This repository contains the scripts and code used in the article entitled <u>"Unveiling the role of miR-187 in adult ovarian follicle growth and female fecundity in *Oryzias latipes* (medaka)"</u>.
+# Integrated analysis of miR-187 in medaka fertility
+This repository contains the scripts and code used in the article entitled <u>"Unveiling the role of miR-187 in adult ovarian follicle growth and female fecundity in *Oryzias latipes* (medaka)"</u> (https://doi.org/xxx).
 
 It provides the computational workflows for:
 
-- **3D imaging analysis**, used to quantify ovarian follicle composition in young adult (104 dpf) and aged adult (211 dpf) *miR-187⁻/⁻* (MUT) and wild-type (WT) medaka ovaries.
+- **3D imaging analysis**, used to quantify ovarian follicle composition in young adult (104 dpf) and aged adult (211 dpf) miR-187 mutant (MUT) and wild-type (WT) medaka ovaries.
 
-- **BRB-seq transcriptomic analysis**, performed to compare gene expression profiles between *miR-187⁻/⁻* mutants and wild-type (WT) medaka ovaries, and to identify potential miR-187-3p targets involved in ovarian function.
+- **BRB-seq transcriptomic analysis**, performed to compare gene expression profiles between miR-187 mutant (MUT) and wild-type (WT) medaka ovaries, and to identify potential miR-187-3p targets involved in ovarian function.
 
 ---
 
@@ -13,27 +13,21 @@ It provides the computational workflows for:
 
 ```
 miR187-medaka-fertility/
-├─ README.md
-├─ .gitignore
-├─ CITATION.cff
-├─ environment.yml
 │
 ├─ 3D_imaging_analysis/
 │ ├─ README.md 
 │ └─ img_viz3D.R
 │
-├─ BRB-seq_transcriptomic_analysis/
+├─  BRB-seq_transcriptomic_analysis/
 │ ├─ README.md
 │ └─ data/        # input files
-│ └─ BRBseq_analysis.Rmd       # Transcriptomic pipeline 
+│ └─ BRBseq_analysis.Rmd       # Transcriptomic pipeline
 │
-└─ docs/
-└─ README.md # References, notes, supplementary info
+├─ README.md
+├─ .gitignore
+├─ CITATION.cff
+└─ environment.yml
 ```
-**Legend**
-- `3D_imaging_analysis/` → **3D imaging** segmentation & quantification  
-- `BRB-seq_transcriptomic_analysis/` → **BRB-seq transcriptomic** notebook  
-- `docs/` → documentation, protocols, references  
 
 ---
 
@@ -42,7 +36,6 @@ miR187-medaka-fertility/
 Raw and processed data will be available upon publication:
 
 - **RNA-seq raw reads (BRB-seq)**: NCBI SRA / ENA — BioProject **PRJNAxxxxxx**
-- **Processed counts + metadata**: GEO **GSExxxxxx**
 - **3D ovarian imaging**: BioImage Archive **BIA-xxxx**
 
 > Accessions will be updated when available.
@@ -51,14 +44,7 @@ Raw and processed data will be available upon publication:
 
 ## Environment setup
 
-### Python (for imaging analysis)
-Create and activate the conda environment:
-```bash
-conda env create -f environment.yml
-conda activate mir187-imaging
-```
-
-### R (for BRB-seq analysis)
+**R (for BRB-seq analysis)**
 Use renv to restore the exact R environment used in this project.
 renv ensures that everyone reproduces the same results by installing the same versions of the R packages.
 
@@ -80,8 +66,8 @@ cd miR187-medaka-fertility
 See `data/README.md` for dataset links and accession numbers.
 
 3-Run the analyses
-Imaging: run the Python and R scripts in `scripts/python/` and in `scripts/R/`
-Transcriptomics: open and run the R Markdown notebook notebooks/BRBseq_analysis.Rmd
+Imaging: run the R scripts in `scripts/python/` and in `scripts/R/`
+Transcriptomics: open and run the R Markdown notebook BRBseq_analysis.Rmd
 
 ## If you use this code, please cite:
 
