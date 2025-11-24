@@ -1,9 +1,9 @@
 # List of files used for the BRB seq transcriptomic data analysis pipeline :
 
-- "STAR_SOLO_counts.xls"
+- "STAR_SOLO_counts.xls"  
 File obtain using the [Nextflow RNAseq pipeline](https://forgemia.inra.fr/lpgp/rnaseq).
 
-- orthologs.txt.gz
+- orthologs.txt.gz  
 The file orthologs.txt.gz was downloaded from Ensembl BioMart (Homology data for Oryzias latipes) and contains ortholog gene IDs, gene names, orthology type annotations, and percent identity metrics.
 
 - "miRNA187_contextscore_output.txt"  
