@@ -17,6 +17,7 @@ miR187-medaka-fertility/
 ├─ 3D_imaging_analysis/
 │ ├─ heatmap/
 │ ├─ density/
+│ ├─ total_count/
 │ └─ README.md 
 │
 ├─  BRB-seq_transcriptomic_analysis/
@@ -67,7 +68,7 @@ cd miR187-medaka-fertility
 See `data/README.md` for dataset links and accession numbers.
 
 3-Run the analyses
-Imaging: run the R scripts in `heatmap/` and in `density/`
+Imaging: run the R scripts in `heatmap/`, in `density/` and in `total_count/`
 Transcriptomics: open and run the R Markdown notebook in `BRB-seq_transcriptomic_analysis/`
 
 ## If you use this code, please cite:
