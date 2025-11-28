@@ -22,6 +22,11 @@ This folder contains three analysis pipelines for 3D imaging data of WT and miR-
 │  ├─ input/
 │  ├─ total_count_miR187.R
 │  └─ README.md
+├─ renv/
+│  ├─ .gitignore
+│  ├─ activate.R
+│  └─ settings.json
+├─ renv.lock
 ├─ README.md   
 ```
 
@@ -35,6 +40,17 @@ This folder contains three analysis pipelines for 3D imaging data of WT and miR-
 - To run the analyses:
   1. Navigate to the desired subfolder.
   2. Follow the instructions in the respective README.
+
+## Environment setup
+Use  `renv` to restore the exact R environment used in this project. `renv` ensures that everyone reproduces the same results across machines.
+The `renv.lock` file contains the exact versions of packages required to run the pipelines.
+
+After cloning the repository, restore the environment with:
+```
+install.packages("renv")  # If renv is not already installed
+renv::restore()           # installs packages as recorded in renv.lock
+```
+
 
 ## Notes
 
