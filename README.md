@@ -5,7 +5,7 @@ It provides the computational workflows for:
 
 - **3D imaging analysis**, used to quantify ovarian follicle composition in young adult (104 dpf) and aged adult (211 dpf) miR-187 mutant (MUT) and wild-type (WT) medaka ovaries.
 
-- **BRB-seq transcriptomic analysis**, performed to compare gene expression profiles between miR-187 mutant (MUT) and wild-type (WT) medaka ovaries, and to identify potential miR-187-3p targets involved in ovarian function.
+- **BRB-seq transcriptomic analysis**, performed to compare gene expression profiles between miR-187 mutant (MUT) and wild-type (WT) young adult medaka ovaries, and to identify potential miR-187-3p targets involved in ovarian function.
 
 ---
 
@@ -47,29 +47,34 @@ Raw and processed data will be available upon publication:
 ## Environment setup
 
 **R environment (for BRB-seq analysis and 3D imaging pipelines)**
-This project uses **renv** to restore the exact R environment and ensure full reproducibility by installing the same versions of all required R packages.
+Environment setup instructions are provided in the README files of each analysis module (BRB-seq transcriptomics and 3D imaging).
+Each module includes its own renv environment to ensure reproducibility.  
 
-
-Run the following commands in R:
-```r
-install.packages("renv")  # installs renv if not already available
-renv::restore()           # installs all the package versions recorded in renv.lock
-```
+---
 
 ## How to reproduce
 
-1-Clone the repository :
+To reproduce the analyses, first clone the repository:
 ```bash
 git clone https://github.com/S-Gay/miR187-medaka-fertility.git
 cd miR187-medaka-fertility
 ```
+This project contains two independent analysis pipelines (3D imaging and BRB-seq transcriptomics).
+Each pipeline includes:
 
-2-Download datasets
-See `data/README.md` for dataset links and accession numbers.
+its own dataset requirements,
 
-3-Run the analyses
-3D imaging: run the R scripts located in `heatmap/`, `density/` and `total_count/`
-Transcriptomics: open and run the R Markdown notebook in `BRB-seq_transcriptomic_analysis/`
+its own R environment setup (via renv),
+
+and its own step-by-step instructions.
+
+Please refer to the README.md files located in:
+
+3D_imaging_analysis/
+
+BRB-seq_transcriptomic_analysis/
+
+for complete reproduction details.
 
 ## If you use this code, please cite:
 
