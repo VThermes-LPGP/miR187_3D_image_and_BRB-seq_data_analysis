@@ -7,7 +7,6 @@ It provides the computational workflows for:
 
 - **BRB-seq transcriptomic analysis**, performed to compare gene expression profiles between miR-187 mutant (MUT) and wild-type (WT) young adult medaka ovaries, and to identify potential miR-187-3p targets involved in ovarian function.
 
----
 
 ## Repository structure
 
@@ -31,8 +30,6 @@ miR187-medaka-fertility/
 └─ environment.yml
 ```
 
----
-
 ## Data availability
 
 Raw and processed data will be available upon publication:
@@ -42,14 +39,12 @@ Raw and processed data will be available upon publication:
 
 > Accessions will be updated when available.
 
----
 
 ## Environment setup
 
 Environment setup instructions are provided in the README files of each analysis module (BRB-seq transcriptomics and 3D imaging).
 Each module includes its own renv environment to ensure reproducibility.  
 
----
 
 ## How to reproduce
 
