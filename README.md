@@ -17,6 +17,7 @@ miR187-medaka-fertility/
 ├─ 3D_imaging_analysis/
 │ ├─ heatmap/
 │ ├─ density/
+│ ├─ total_count/
 │ └─ README.md 
 │
 ├─  BRB-seq_transcriptomic_analysis/
@@ -45,9 +46,9 @@ Raw and processed data will be available upon publication:
 
 ## Environment setup
 
-**R (for BRB-seq analysis)**
-Use renv to restore the exact R environment used in this project.
-renv ensures that everyone reproduces the same results by installing the same versions of the R packages.
+**R environment (for BRB-seq analysis and 3D imaging pipelines)**
+This project uses **renv** to restore the exact R environment and ensure full reproducibility by installing the same versions of all required R packages.
+
 
 Run the following commands in R:
 ```r
@@ -67,7 +68,7 @@ cd miR187-medaka-fertility
 See `data/README.md` for dataset links and accession numbers.
 
 3-Run the analyses
-Imaging: run the R scripts in `heatmap/` and in `density/`
+3D imaging: run the R scripts located in `heatmap/`, `density/` and `total_count/`
 Transcriptomics: open and run the R Markdown notebook in `BRB-seq_transcriptomic_analysis/`
 
 ## If you use this code, please cite:
