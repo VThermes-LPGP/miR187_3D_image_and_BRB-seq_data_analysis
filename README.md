@@ -46,7 +46,6 @@ Raw and processed data will be available upon publication:
 
 ## Environment setup
 
-**R environment (for BRB-seq analysis and 3D imaging pipelines)**
 Environment setup instructions are provided in the README files of each analysis module (BRB-seq transcriptomics and 3D imaging).
 Each module includes its own renv environment to ensure reproducibility.  
 
@@ -59,20 +58,17 @@ To reproduce the analyses, first clone the repository:
 git clone https://github.com/S-Gay/miR187-medaka-fertility.git
 cd miR187-medaka-fertility
 ```
-This project contains two independent analysis pipelines (3D imaging and BRB-seq transcriptomics).
+This project contains two independent analysis pipelines (3D imaging and BRB-seq transcriptomics).  
 Each pipeline includes:
 
-its own dataset requirements,
+- its own dataset requirements,
+- its own R environment setup (via `renv`),
+- and its own step-by-step instructions.
 
-its own R environment setup (via renv),
+Please refer to the `README.md` files located in:
 
-and its own step-by-step instructions.
-
-Please refer to the README.md files located in:
-
-3D_imaging_analysis/
-
-BRB-seq_transcriptomic_analysis/
+- `3D_imaging_analysis/`
+- `BRB-seq_transcriptomic_analysis/`
 
 for complete reproduction details.
 
