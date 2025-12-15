@@ -69,8 +69,7 @@ for complete reproduction details.
 
 ## If you use this code, please cite:
 
-Unveiling the role of mir-187 in adult ovarian follicle growth and female fecundity in medaka (Oryzias latipes).
-Marlène Davilma, Stéphanie Gay, Sully Heng, Fabrice Mahé, Manon Thomas, Laurence Dubreil, Jérôme Montfort, Aurélien Brionne, Julien Bobe, Violette Thermes (2026). 
+The miR-187 is a newly identified regulator of early oogenesis and female fecundity in medaka. Marlène Davilma, Stéphanie Gay, Sully Heng, Fabrice Mahé, Manon Thomas, Laurence Dubreil, Jérôme Montfort, Aurélien Brionne, Julien Bobe, Violette Thermes (2026). 
 Version 1.0, Zenodo. DOI: 10.5281/zenodo.xxxxxx
 
 ## License
