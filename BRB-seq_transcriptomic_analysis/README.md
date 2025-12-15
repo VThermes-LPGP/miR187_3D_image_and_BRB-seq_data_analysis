@@ -1,7 +1,7 @@
 # BRB-seq transcriptomic analysis pipeline
 
 ## Overview and purpose
-The notebook "BRBseq_analysis.Rmd" reproduces the main steps of the BRB-seq transcriptomic analysis used in the article entitled <ins> Unveiling the role of mir-187 in adult ovarian follicle growth and female fecundity in medaka (Oryzias latipes). </ins>
+The notebook "BRBseq_analysis.Rmd" reproduces the main steps of the BRB-seq transcriptomic analysis used in the article entitled <ins> The miR-187 is a newly identified regulator of early oogenesis and female fecundity in medaka. </ins>
 
 It focuses on two key objectives:
 
