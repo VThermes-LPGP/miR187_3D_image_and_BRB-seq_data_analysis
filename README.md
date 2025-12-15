@@ -1,5 +1,5 @@
-# Integrated analysis of miR-187 in medaka fertility
-This repository contains the scripts and code used in the article entitled <u>"Unveiling the role of miR-187 in adult ovarian follicle growth and female fecundity in *Oryzias latipes* (medaka)"</u> (https://doi.org/xxx).
+# Computational workflows for 3D imaging and BRB-seq analyses of miR-187 in medaka ovaries
+This repository contains the scripts and code used in the article entitled <u>"The miR-187 is a newly identified regulator of early oogenesis and female fecundity in medaka"</u> (https://doi.org/xxx).
 
 It provides the computational workflows for:
 
@@ -20,8 +20,8 @@ miR187-medaka-fertility/
 │ └─ README.md 
 │
 ├─  BRB-seq_transcriptomic_analysis/
-│ ├─ data/                      # input files
-│ ├─ BRBseq_analysis.Rmd        # Transcriptomic pipeline 
+│ ├─ data/                     
+│ ├─ BRBseq_analysis.Rmd        
 │ └─ README.md
 │
 ├─ README.md
