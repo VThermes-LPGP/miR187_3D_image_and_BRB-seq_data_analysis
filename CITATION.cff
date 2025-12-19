@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "Unveiling the role of mir-187 in adult ovarian follicle growth and female fecundity in medaka (Oryzias latipes)"
+title: "The miR-187 is a newly identified regulator of early oogenesis and female fecundity in medaka"
 authors:
 - family-names: "Davilma"
   given-names: "Marlène"
@@ -26,7 +26,7 @@ authors:
 
 version: 1.0.0
 doi: 10.5281/zenodo.xxxxxxx
-date-released: 2025-10-22
+date-released: 2025-12-19
 
-repository-code: "https://github.com/VioThermes/miR187_medaka_fertility"
+repository-code: "https://github.com/VThermes-LPGP/miR187_medaka_fertility"
 license: "MIT"
