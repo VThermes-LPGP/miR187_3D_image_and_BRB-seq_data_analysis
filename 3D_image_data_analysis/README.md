@@ -1,6 +1,6 @@
 # 3D Ovarian Image Data Analysis
 
-This folder contains three analysis pipelines for 3D imaging data of WT and miR-187 mutant (MUT) medaka ovaries for 104 dpf (juveniles) and 211 dpf (adults):
+This folder contains three analysis pipelines for 3D image data of WT and miR-187 mutant (MUT) medaka ovaries for 104 dpf (juveniles) and 211 dpf (adults):
 
 1. **Heatmap pipeline** – generates Z-score normalized heatmaps to visualize differences between WT and MUT.
 2. **Density pipeline** – computes and visualizes follicle size distributions as density plots.
