@@ -1,7 +1,7 @@
-# 3D Ovary Imaging Analysis – total count Pipeline
+# 3D Ovarian Image Analysis – total count Pipeline
 
 ## Overview and purpose
-This R script automatically processes 3D imaging data of WT and miR-187 mutant (MUT) medaka ovaries at two developmental stages (104 dpf and 211 dpf).  
+This R script automatically processes 3D image data of WT and miR-187 mutant (MUT) medaka ovaries at two developmental stages (104 dpf and 211 dpf).  
 
 It performs the following steps:
 - Reads Excel files from subfolders corresponding to each age (`104dpf` and `211dpf`).  
