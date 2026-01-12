@@ -36,7 +36,7 @@ miR187-medaka-fertility/
 Raw and processed data will be available upon publication:
 
 - **RNA-seq raw reads (BRB-seq)**: NCBI SRA / ENA — BioProject **PRJNA1233206** 
-- **3D ovarian imaging**: BioImage Archive **DOI 10.6019/S-BIAD1824**
+- **3D ovarian images**: BioImage Archive **DOI 10.6019/S-BIAD1824**
 - **3D image-derived data** (follicles diameters): Recherche Data Gouv **https://doi.org/10.57745/B6OOMX**
 
 
