@@ -1,4 +1,4 @@
-# 3D Ovarian Imaging Data Analysis Pipelines
+# 3D Ovarian Image Data Analysis Pipelines
 
 This folder contains three analysis pipelines for 3D imaging data of WT and miR-187 mutant (MUT) medaka ovaries for 104 dpf (juveniles) and 211 dpf (adults):
 
@@ -9,7 +9,7 @@ This folder contains three analysis pipelines for 3D imaging data of WT and miR-
 ## Repository structure
 
 ```
-3D_imaging_data_analysis/
+3D_image_data_analysis/
 ├─ heatmap/
 │  ├─ input/
 │  ├─ heatmap_miR187.R
