@@ -1,4 +1,4 @@
-# 3D Ovary Image Analysis – density Pipeline
+# 3D Ovarian Image Analysis – density Pipeline
 
 ## Overview and purpose
 This R script processes 3D image data of WT and miR-187 mutant (MUT) medaka ovaries.  
