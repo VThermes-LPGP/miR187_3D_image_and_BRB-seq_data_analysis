@@ -4,7 +4,7 @@ medaka"</u>.
 
 It provides the computational workflows for:
 
-- **3D imaging data analysis**, used to quantify ovarian follicle composition in young adult (104 dpf) and aged adult (211 dpf) miR-187 mutant (MUT) and wild-type (WT) medaka ovaries.
+- **3D image data analysis**, used to quantify ovarian follicle composition in young adult (104 dpf) and aged adult (211 dpf) miR-187 mutant (MUT) and wild-type (WT) medaka ovaries.
 
 - **BRB-seq transcriptomic analysis**, performed to compare gene expression profiles between miR-187 mutant (MUT) and wild-type (WT) young adult medaka ovaries, and to identify potential miR-187-3p targets involved in ovarian function.
 
@@ -14,7 +14,7 @@ It provides the computational workflows for:
 ```
 miR187-medaka-fertility/
 │
-├─ 3D_imaging_data_analysis/
+├─ 3D_image_data_analysis/
 │ ├─ heatmap/
 │ ├─ density/
 │ ├─ total_count/
@@ -51,7 +51,7 @@ Each module includes its own renv environment to ensure reproducibility.
 To reproduce the analyses, first clone the repository:
 ```bash
 git clone https://github.com/V.Thermes_LPGP/miR187-medaka-fertility.git
-cd miR187_3D_imaging_and_BRB-seq_data_analysis
+cd miR187_Analysis_of_3D_image_data_and_BRB-seq
 ```
 This project contains two independent analysis pipelines (3D imaging data and BRB-seq transcriptomics).  
 Each pipeline includes:
@@ -62,7 +62,7 @@ Each pipeline includes:
 
 Please refer to the `README.md` files located in:
 
-- `3D_imaging_data_analysis/`
+- `3D_image_data_analysis/`
 - `BRB-seq_transcriptomic_analysis/`
 
 for complete reproduction details.
