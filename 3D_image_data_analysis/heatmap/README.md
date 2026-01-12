@@ -1,7 +1,7 @@
-# 3D Ovary Imaging Analysis – Heatmap Pipeline
+# 3D Ovarian Image Analysis – Heatmap Pipeline
 
 ## Overview and purpose
-This R script processes 3D imaging data of WT and miR-187 mutant (MUT) medaka ovaries.  
+This R script processes 3D image data of WT and miR-187 mutant (MUT) medaka ovaries.  
 
 It performs the following steps:
 
