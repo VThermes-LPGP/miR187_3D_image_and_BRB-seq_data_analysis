@@ -1,9 +1,10 @@
-# Computational workflows for 3D imaging and BRB-seq analyses of miR-187 in medaka ovaries
-This repository contains the scripts and code used in the article entitled <u>"The miR-187 is a newly identified regulator of early oogenesis and female fecundity in medaka"</u> (https://doi.org/xxx).
+# Computational workflows for analysis of 3D imaging data and BRB-seq data in miR-187-/- and wild-type medaka ovaries
+This repository contains the scripts and code used in the article entitled <u>"Identification of miR-187 as a modulator of early oogenesis and female fecundity in
+medaka"</u>.
 
 It provides the computational workflows for:
 
-- **3D imaging analysis**, used to quantify ovarian follicle composition in young adult (104 dpf) and aged adult (211 dpf) miR-187 mutant (MUT) and wild-type (WT) medaka ovaries.
+- **3D imaging data analysis**, used to quantify ovarian follicle composition in young adult (104 dpf) and aged adult (211 dpf) miR-187 mutant (MUT) and wild-type (WT) medaka ovaries.
 
 - **BRB-seq transcriptomic analysis**, performed to compare gene expression profiles between miR-187 mutant (MUT) and wild-type (WT) young adult medaka ovaries, and to identify potential miR-187-3p targets involved in ovarian function.
 
@@ -13,7 +14,7 @@ It provides the computational workflows for:
 ```
 miR187-medaka-fertility/
 │
-├─ 3D_imaging_analysis/
+├─ 3D_imaging_data_analysis/
 │ ├─ heatmap/
 │ ├─ density/
 │ ├─ total_count/
@@ -35,14 +36,13 @@ miR187-medaka-fertility/
 Raw and processed data will be available upon publication:
 
 - **RNA-seq raw reads (BRB-seq)**: NCBI SRA / ENA — BioProject **PRJNA1233206** 
-- **3D ovarian imaging**: BioImage Archive **BIA-xxxx**
-
-> Accessions will be updated when available.
+- **3D ovarian imaging**: BioImage Archive **DOI 10.6019/S-BIAD1824**
+- **3D image-derived data** (follicles diameters): Recherche Data Gouv **https://doi.org/10.57745/B6OOMX**
 
 
 ## Environment setup
 
-Environment setup instructions are provided in the README files of each analysis module (BRB-seq transcriptomics and 3D imaging).
+Environment setup instructions are provided in the README files of each analysis module (BRB-seq transcriptomics analysis and 3D imaging data analysis).
 Each module includes its own renv environment to ensure reproducibility.  
 
 
@@ -53,7 +53,7 @@ To reproduce the analyses, first clone the repository:
 git clone https://github.com/V.Thermes_LPGP/miR187-medaka-fertility.git
 cd miR187-medaka-fertility
 ```
-This project contains two independent analysis pipelines (3D imaging and BRB-seq transcriptomics).  
+This project contains two independent analysis pipelines (3D imaging data and BRB-seq transcriptomics).  
 Each pipeline includes:
 
 - its own dataset requirements,
@@ -62,15 +62,14 @@ Each pipeline includes:
 
 Please refer to the `README.md` files located in:
 
-- `3D_imaging_analysis/`
+- `3D_imaging_data_analysis/`
 - `BRB-seq_transcriptomic_analysis/`
 
 for complete reproduction details.
 
 ## If you use this code, please cite:
 
-The miR-187 is a newly identified regulator of early oogenesis and female fecundity in medaka. Marlène Davilma, Stéphanie Gay, Sully Heng, Fabrice Mahé, Manon Thomas, Laurence Dubreil, Jérôme Montfort, Aurélien Brionne, Julien Bobe, Violette Thermes (2026). 
-Version 1.0, Zenodo. DOI: 10.5281/zenodo.xxxxxx
+Identification of miR-187 as a modulator of early oogenesis and female fecundity in medaka. Marlène Davilma, Stéphanie Gay, Sully Heng, Fabrice Mahé, Manon Thomas, Laurence Dubreil, Jérôme Montfort, Aurélien Brionne, Julien Bobe, Violette Thermes (2026). 
 
 ## License
 
