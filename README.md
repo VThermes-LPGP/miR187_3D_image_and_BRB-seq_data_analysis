@@ -51,7 +51,7 @@ Each module includes its own renv environment to ensure reproducibility.
 To reproduce the analyses, first clone the repository:
 ```bash
 git clone https://github.com/V.Thermes_LPGP/miR187-medaka-fertility.git
-cd miR187_Analysis_of_3D_image_data_and_BRB-seq
+cd miR187_Analysis_of_3D_image_and_BRB-seq_data
 ```
 This project contains two independent analysis pipelines (3D imaging data and BRB-seq transcriptomics).  
 Each pipeline includes:
