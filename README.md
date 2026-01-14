@@ -1,6 +1,6 @@
 # Computational workflows for analysis of 3D image and BRB-seq data in miR-187-/- and wild-type medaka ovaries
-This repository contains the scripts and code used in the article entitled <u>"Identification of miR-187 as a modulator of early oogenesis and female fecundity in
-medaka"</u>.
+This repository contains the scripts and code used in the article entitled **"Identification of miR-187 as a modulator of early oogenesis and female fecundity in medaka."**
+
 
 It provides the computational workflows for:
 
@@ -12,7 +12,7 @@ It provides the computational workflows for:
 ## Repository structure
 
 ```
-miR187-medaka-fertility/
+miR187_3D_image_and_BRB-seq_data_analysis/
 │
 ├─ 3D_image_data_analysis/
 │ ├─ heatmap/
@@ -20,7 +20,7 @@ miR187-medaka-fertility/
 │ ├─ total_count/
 │ └─ README.md 
 │
-├─  BRB-seq_transcriptomic_analysis/
+├─ BRB-seq_transcriptomic_analysis/
 │ ├─ data/                     
 │ ├─ BRBseq_analysis.Rmd        
 │ └─ README.md
@@ -50,8 +50,8 @@ Each module includes its own renv environment to ensure reproducibility.
 
 To reproduce the analyses, first clone the repository:
 ```bash
-git clone https://github.com/V.Thermes_LPGP/miR187-medaka-fertility.git
-cd miR187_Analysis_of_3D_image_and_BRB-seq_data
+git clone https://github.com/V.Thermes_LPGP/miR187_3D_image_and_BRB-seq_data_analysis.git
+cd miR187_3D_image_and_BRB-seq_data_analysis
 ```
 This project contains two independent analysis pipelines (3D imaging data and BRB-seq transcriptomics).  
 Each pipeline includes:
