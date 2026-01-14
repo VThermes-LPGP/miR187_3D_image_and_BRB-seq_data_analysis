@@ -42,7 +42,7 @@ Raw and processed data will be available upon publication:
 
 ## Environment setup
 
-Environment setup instructions are provided in the README files of each analysis module (BRB-seq transcriptomics analysis and 3D imaging data analysis).
+Environment setup instructions are provided in the README files of each analysis module (BRB-seq transcriptomics analysis and 3D image data analysis).
 Each module includes its own renv environment to ensure reproducibility.  
 
 
