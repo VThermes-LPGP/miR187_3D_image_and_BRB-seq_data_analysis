@@ -1,5 +1,5 @@
 # Computational workflows for analysis of 3D image and BRB-seq data in miR-187-/- and wild-type medaka ovaries
-This repository contains the scripts and code used in the article entitled **"Identification of miR-187 as a modulator of early oogenesis and female fecundity in medaka."**
+This repository contains the scripts and code used in the article entitled <u>"Identification of miR-187 as a modulator of early oogenesis and female fecundity in medaka"</u>.
 
 
 It provides the computational workflows for:
